@@ -6,7 +6,7 @@ A museum manager. Goal: correlate the tourist attendance at their museums with t
 - just
 
 # Running the program:
-    `uv run python main.py`
+    `uv run python main.py {POPULATION_NUMBER}` ie: `uv run python main.py 10_000`
 
 # Running inside docker:  
     `docker build -t museum-mgr .`

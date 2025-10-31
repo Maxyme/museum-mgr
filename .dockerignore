@@ -1,1 +1,10 @@
 local.db
+model.onnx
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.pytest_cache/
+.ruff_cache/
+.git/
+.gitignore

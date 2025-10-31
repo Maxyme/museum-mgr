@@ -13,8 +13,13 @@ __pycache__/
 # Ruff
 .ruff_cache/
 
-# Local dbs
+# Local files (dbs, models, json, etc.)
 *.db
+*.onnx
+*.json
 
 # local envs
-.env/
+.env/# ONNX models
+
+# Pytest
+.pytest_cache/
