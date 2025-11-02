@@ -1,6 +1,6 @@
 version = 1
 revision = 3
-requires-python = ">=3.13"
+requires-python = ">=3.13, <4.0"
 
 [[package]]
 name = "anyio"
@@ -249,18 +249,21 @@ dependencies = [
     { name = "beautifulsoup4" },
     { name = "httpx" },
     { name = "lxml" },
-    { name = "numerizer" },
     { name = "numpy" },
     { name = "onnx" },
     { name = "onnxruntime" },
     { name = "peewee" },
     { name = "polars" },
-    { name = "pytest" },
-    { name = "pytest-asyncio" },
-    { name = "ruff" },
     { name = "scikit-learn" },
     { name = "skl2onnx" },
     { name = "sparqlwrapper" },
+]
+
+[package.dev-dependencies]
+dev = [
+    { name = "pytest" },
+    { name = "pytest-asyncio" },
+    { name = "ruff" },
 ]
 
 [package.metadata]
@@ -268,27 +271,21 @@ requires-dist = [
     { name = "beautifulsoup4", specifier = ">=4.14.2" },
     { name = "httpx", specifier = ">=0.28.1" },
     { name = "lxml", specifier = ">=5.3.0" },
-    { name = "numerizer", specifier = ">=0.2.4" },
     { name = "numpy", specifier = ">=2.1.3" },
     { name = "onnx", specifier = ">=1.19.1" },
     { name = "onnxruntime", specifier = ">=1.23.2" },
     { name = "peewee", specifier = ">=3.18.2" },
     { name = "polars", specifier = ">=1.16.0" },
-    { name = "pytest", specifier = ">=8.3.4" },
-    { name = "pytest-asyncio", specifier = ">=0.24.0" },
-    { name = "ruff", specifier = ">=0.14.2" },
     { name = "scikit-learn", specifier = ">=1.7.2" },
     { name = "skl2onnx", specifier = ">=1.19.1" },
     { name = "sparqlwrapper", specifier = ">=2.0.0" },
 ]
 
-[[package]]
-name = "numerizer"
-version = "0.2.4"
-source = { registry = "https://pypi.org/simple" }
-sdist = { url = "https://files.pythonhosted.org/packages/bb/63/f8e3c8feb34814ed30d1fbea3c2785d277f58ee691f1e0f7f45a3ba6c43c/numerizer-0.2.4.tar.gz", hash = "sha256:2093849f05eb803ddb4643414a23cd1736c63112c98874cd40adebf5cf86de24", size = 6936, upload-time = "2024-09-26T08:38:58.614Z" }
-wheels = [
-    { url = "https://files.pythonhosted.org/packages/bd/33/3f516a6fc3c9c4d31e2baf0c22c0acc13d8d4bed56f5bb8e17f250775f27/numerizer-0.2.4-py2.py3-none-any.whl", hash = "sha256:4d5bb2630e5137cbcb1014069e6206e3c7748f7ee8dc18a0d22fbc1fcfd010e4", size = 7266, upload-time = "2024-09-26T08:36:59.169Z" },
+[package.metadata.requires-dev]
+dev = [
+    { name = "pytest", specifier = ">=8.3.4" },
+    { name = "pytest-asyncio", specifier = ">=0.24.0" },
+    { name = "ruff", specifier = ">=0.14.2" },
 ]
 
 [[package]]

@@ -1,0 +1,1 @@
+Cache folder to store model and database files.

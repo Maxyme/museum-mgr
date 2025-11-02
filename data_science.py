@@ -19,9 +19,11 @@ def get_linear_regression_model(df: pl.DataFrame) -> ModelProto:
         df: Polars DataFrame with training data
 
     Returns:
-        ONNX model
+        ONNX model from the trained sklearn linear regression model
     """
     arrays = df.select("population", "avg_museum_visitors_per_year").to_numpy()
+
+    # Create the training arrays
     x = np.expand_dims(arrays[:, 0], 1)
     y = arrays[:, 1]
 
@@ -29,13 +31,11 @@ def get_linear_regression_model(df: pl.DataFrame) -> ModelProto:
     model = LinearRegression()
     model.fit(x, y)
 
-    # Define the input type and shape for the ONNX model
-    # The shape is [None, number_of_features] (None means dynamic batch size)
+    # Set the initial type for the ONNX model: [None, number_of_features]
     initial_type = [("population", Int64TensorType([None, x.shape[1]]))]
 
-    # Convert the model
-    onnx_model = convert_sklearn(model, initial_types=initial_type)
-    return onnx_model
+    # Convert and return the model
+    return convert_sklearn(model, initial_types=initial_type)
 
 
 def predict(session: InferenceSession, population: int):

@@ -12,9 +12,11 @@ from data_science import (
     predict,
 )
 
-museum_data_path = Path(__file__).parent / "museum_data.json"
-db_path = Path(__file__).parent / "local.db"
-model_path = Path(__file__).parent / "model.onnx"
+cache_path = Path(__file__).parent / "cache"
+cache_path.mkdir(exist_ok=True)
+museum_data_path = cache_path / "museum_data.json"
+db_path = cache_path / "local.db"
+model_path = cache_path / "model.onnx"
 
 
 def main(population: int):

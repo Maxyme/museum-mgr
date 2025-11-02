@@ -8,9 +8,9 @@ A museum manager. Goal: correlate the tourist attendance at their museums with t
 # Running the program:
     `uv run python main.py {POPULATION_NUMBER}` ie: `uv run python main.py 10_000`
 
-# Running inside docker:  
-    `docker build -t museum-mgr .`
-    `docker run -p 8000:8000 museum-mgr`
+# Running inside docker/podman (mounting the cache directory to avoid re-fetching the data):
+    `docker build -t museum-mgr .` 
+    `docker run -v /Users/mjacques/code/museum-mgr/cache:/app/cache museum-mgr {POPULATION_NUMBER}`
 
 # Tasks: 
 - Build a harmonized database with the characteristics of museums and the population of the cities where they are located.
