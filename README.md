@@ -10,7 +10,7 @@ A museum manager. Goal: correlate the tourist attendance at their museums with t
 
 # Running inside docker/podman (mounting the cache directory to avoid re-fetching the data):
     `docker build -t museum-mgr .` 
-    ` docker run -v "$(PWD)/cache:/app/cache" museum-mgr 100_000`
+    `docker run -v "$(PWD)/cache:/app/cache" museum-mgr 100_000`
 
 # Running jupyter notebook:  
     `docker pull jupyter/scipy-notebook:latest`

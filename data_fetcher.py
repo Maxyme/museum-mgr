@@ -1,21 +1,18 @@
 import math
 from collections import defaultdict
-from pathlib import Path
 
 import httpx
 from bs4 import BeautifulSoup
-from peewee import *
 import re
-import json
-
+from multiprocessing import Pool
 
 # Add Regex to remove parentheses and brackets and anything inside
 NUMBER_REGEX = re.compile(r"\(.*?\)|\[.*?\]")
 
-MUSEUMS_URL = "https://en.wikipedia.org/wiki/List_of_most-visited_museums"
+headers = {"User-Agent": "Mozilla/5.0"}
 
 UNITS = {
-    "million": 1000000,
+    "million": 1_000_000,
 }
 
 
@@ -42,11 +39,20 @@ def _parse_number_with_string_multiplier(text: str) -> int:
     return math.floor((text_number * local_multiplier))
 
 
-def get_museum_visitors() -> dict:
+def _make_httpx_request(url: str) -> httpx.Response:
+    """Make an HTTPX GET request with headers."""
+    with httpx.Client() as client:
+        response = client.get(url, headers=headers)
+        response.raise_for_status()
+    return response
+
+
+def get_museum_visitors(museums_url: str) -> dict:
     """Scrapes the Wikipedia page for the list of most-visited museums."""
 
     with httpx.Client() as client:
-        response = client.get(MUSEUMS_URL)
+        response = client.get(museums_url, headers=headers)
+        response.raise_for_status()
 
     soup = BeautifulSoup(response.content, "html.parser")
 
@@ -68,16 +74,20 @@ def get_museum_visitors() -> dict:
         # use the city href as key to prevent same-ish city names
         museums_data[city_href].append(museum_data)
 
-    # todo: parallelize this for better performance
+    # todo: run loop in async tasks this for better performance
     pop_visitors = defaultdict(dict)
+    urls = []
     for city_href, values in museums_data.items():
-        # city_href = museum_data[city]["href"].lstrip("/wiki/")
-        # url_wikimedia = f"https://www.wikidata.org/w/api.php?action=wbgetclaims&format=json&titles={city_href}&entity=Q90&property=P1082"
+        # Fetch wikimedia entity for the city
         url_wikimedia = f"https://www.wikidata.org/w/api.php?action=wbgetentities&format=json&sites=enwiki&titles={city_href}&props=claims&languages=en"
+        urls.append(url_wikimedia)
 
-        with httpx.Client() as client:
-            wikimedia_response = client.get(url_wikimedia)
+    with Pool(processes=10) as pool:
+        wikimedia_responses = pool.map(_make_httpx_request, urls)
 
+    # Process each city's wikimedia response
+    for i, (city_href, values) in enumerate(museums_data.items()):
+        wikimedia_response = wikimedia_responses[i]
         wikimedia_json = wikimedia_response.json()
         entities = wikimedia_json["entities"]
 
@@ -104,40 +114,5 @@ def get_museum_visitors() -> dict:
     return pop_visitors
 
 
-def create_and_populate_db(file_path: Path, db: SqliteDatabase):
-    """
-    Creates the database and populates it with museum and city data.
-    Uses parallel requests for faster population fetching.
-    """
-
-    class BaseModel(Model):
-        class Meta:
-            database = db
-
-    class City(BaseModel):
-        name = CharField(unique=True)
-        population = IntegerField()
-        avg_museum_visitors_per_year = IntegerField()
-
-    db.connect(reuse_if_open=True)
-    db.create_tables([City])
-
-    # Load museum data from JSON file
-    with open(file_path, "r") as f:
-        museum_data = json.load(f)
-
-    # Insert data
-    for city_name, data in museum_data.items():
-        # Insert or get city
-        city, _ = City.get_or_create(
-            name=city_name,
-            population=data["population"],
-            avg_museum_visitors_per_year=data["visitors"],
-        )
-
-    db.close()
-
-if __name__ == '__main__':
+if __name__ == "__main__":
     data = get_museum_visitors()
-    db = SqliteDatabase('local.db')
-    create_and_populate_db(Path('museum_data.json'), db)
