@@ -68,7 +68,7 @@ def get_museum_visitors() -> dict:
         # use the city href as key to prevent same-ish city names
         museums_data[city_href].append(museum_data)
 
-    # todo: parallelize this
+    # todo: parallelize this for better performance
     pop_visitors = defaultdict(dict)
     for city_href, values in museums_data.items():
         # city_href = museum_data[city]["href"].lstrip("/wiki/")
@@ -136,3 +136,8 @@ def create_and_populate_db(file_path: Path, db: SqliteDatabase):
         )
 
     db.close()
+
+if __name__ == '__main__':
+    data = get_museum_visitors()
+    db = SqliteDatabase('local.db')
+    create_and_populate_db(Path('museum_data.json'), db)

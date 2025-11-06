@@ -1,13 +1,10 @@
 import argparse
 import json
-
 from pathlib import Path
-
 from onnxruntime import InferenceSession
 from peewee import SqliteDatabase
-
 from data_fetcher import create_and_populate_db, get_museum_visitors
-
+import polars as pl
 from onnx_train_predict import train_model, predict
 
 cache_path = Path(__file__).parent / "cache"
@@ -16,7 +13,6 @@ museum_data_path = cache_path / "museum_data.json"
 db_path = cache_path / "local.db"
 sklearn_model_path = cache_path / "linear_regression_model.joblib"
 model_path = cache_path / "model.onnx"
-import polars as pl
 
 
 def main(population: int):

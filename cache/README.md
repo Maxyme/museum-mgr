@@ -1,1 +1,1 @@
-Cache folder to store model and database files.
+Cache folder to saved json data, trained models and database files.

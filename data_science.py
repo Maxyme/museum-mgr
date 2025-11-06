@@ -22,7 +22,7 @@ def get_linear_regression_model(df: DataFrame) -> LinearRegression:
     """
     try:
         arrays = df.select("population", "avg_museum_visitors_per_year").to_numpy()
-    except:
+    except AttributeError:
         # fallback to pandas
         arrays = df[["population", "avg_museum_visitors_per_year"]].to_numpy()
 

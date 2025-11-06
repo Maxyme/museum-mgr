@@ -25,5 +25,6 @@ __pycache__/
 # Pytest
 .pytest_cache/
 
-# Jupyter Notebook
+# Jupyter Notebooks
 .ipynb_checkpoints
+.ipynb

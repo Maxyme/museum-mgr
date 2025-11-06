@@ -31,10 +31,10 @@ def train_model(
     # Convert and return the model
     onnx_model = convert_sklearn(sklearn_model, initial_types=initial_type)
 
+    # Todo: read from in-memory model instead
     with open(model_path, "wb") as f:
         f.write(onnx_model.SerializeToString())
 
-    # Todo: read from in-memory model instead
     return InferenceSession(model_path)
 
 
