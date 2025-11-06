@@ -24,3 +24,6 @@ __pycache__/
 
 # Pytest
 .pytest_cache/
+
+# Jupyter Notebook
+.ipynb_checkpoints
