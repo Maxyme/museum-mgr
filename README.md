@@ -10,7 +10,35 @@ A museum manager. Goal: correlate the tourist attendance at their museums with t
 
 # Running inside docker/podman (mounting the cache directory to avoid re-fetching the data):
     `docker build -t museum-mgr .` 
-    `docker run -v /Users/mjacques/code/museum-mgr/cache:/app/cache museum-mgr {POPULATION_NUMBER}`
+    ` docker run -v "$(PWD)/cache:/app/cache" museum-mgr 100_000`
+
+# Running jupyter notebook:  
+    `docker pull jupyter/scipy-notebook:latest`
+    `docker run -it --rm -p 8888:8888 -v "$(PWD)":/home/jovyan/work quay.io/jupyter/scipy-notebook` 
+
+# Running Jupyter Notebook for Model Analysis:
+
+First, ensure you have run the main program at least once to generate the model and cache data.
+
+## Build the Jupyter Docker image:
+    `docker build -t museum-mgr-jupyter -f Dockerfile.jupyter .`
+
+## Run Jupyter Notebook with cache mounted:
+    `docker run -p 8888:8888 -v /Users/mjacques/code/museum-mgr/cache:/home/jovyan/work/cache museum-mgr-jupyter`
+
+Then open your browser to `http://localhost:8888` and open `model_details.ipynb` to explore the model.
+
+The notebook includes:
+- Model information and architecture
+- Model coefficients and equation
+- Test predictions
+- Visualization of the regression line
+- Performance metrics (MSE, RMSE, MAE, R²)
+- Residual analysis
+- City rankings by museum visitors
+
+**Note:** This uses the `jupyter/scipy-notebook` Docker image which includes Jupyter, matplotlib, numpy, scipy, and pandas pre-installed. ONNX packages are installed on top of it.
+
 
 # Tasks: 
 - Build a harmonized database with the characteristics of museums and the population of the cities where they are located.

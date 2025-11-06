@@ -17,6 +17,7 @@ __pycache__/
 *.db
 *.onnx
 *.json
+*.joblib
 
 # local envs
 .env/# ONNX models

@@ -1,22 +1,22 @@
 import argparse
 import json
-import polars as pl
+
 from pathlib import Path
 
 from onnxruntime import InferenceSession
 from peewee import SqliteDatabase
 
 from data_fetcher import create_and_populate_db, get_museum_visitors
-from data_science import (
-    get_linear_regression_model,
-    predict,
-)
+
+from onnx_train_predict import train_model, predict
 
 cache_path = Path(__file__).parent / "cache"
 cache_path.mkdir(exist_ok=True)
 museum_data_path = cache_path / "museum_data.json"
 db_path = cache_path / "local.db"
+sklearn_model_path = cache_path / "linear_regression_model.joblib"
 model_path = cache_path / "model.onnx"
+import polars as pl
 
 
 def main(population: int):
@@ -41,12 +41,7 @@ def main(population: int):
             query="SELECT City.population, City.avg_museum_visitors_per_year FROM City WHERE City.population > 200_000",
             connection=db,
         )
-
-        onnx_model = get_linear_regression_model(df)
-        with open(model_path, "wb") as f:
-            f.write(onnx_model.SerializeToString())
-        # Todo: read from in-memory model instead
-        session = InferenceSession(model_path)
+        session = train_model(df, sklearn_model_path, model_path)
     else:
         session = InferenceSession(model_path)
 
