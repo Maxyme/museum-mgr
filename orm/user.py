@@ -4,7 +4,8 @@ from typing import Sequence
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from api_models.user import User, UserCreate, UserUpdate
+from orm.models.user import User
+from api_models.user import UserCreate, UserUpdate
 
 async def create_user(session: AsyncSession, data: UserCreate) -> User:
     user = User(name=data.name, email=data.email, is_admin=data.is_admin)

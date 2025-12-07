@@ -4,7 +4,7 @@ from sqlalchemy.ext.asyncio import async_sessionmaker, create_async_engine
 
 from api_app import app, settings
 from clients.db_client import DBClient
-from api_models.user import User
+from orm.models.user import User
 from sqlalchemy import select
 
 @pytest.fixture(scope="session")

@@ -20,10 +20,11 @@ dependencies = [
     "asyncpg>=0.30.0",
     "pydantic-settings>=2.6.1",
     "advanced-alchemy>=0.19.3",
+    "uuid-utils",
     "alembic>=1.13.1",
     "polyfactory>=2.15.0",
     "loguru>=0.7.2",
-    "python-preference[postgres]>=0.6.0",
+    "asyncmq[postgres]>=0.6.0",
 ]
 
 [tool.uv]
@@ -35,6 +36,10 @@ dev = [
     "pytest-asyncio>=0.24.0",
     "ruff>=0.14.2",
 ]
+
+[tool.pytest.ini_options]
+asyncio_mode = "auto"
+asyncio_default_fixture_loop_scope = "session"
 
 [tool.poetry]
 package-mode = false

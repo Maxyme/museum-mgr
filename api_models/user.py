@@ -1,13 +1,6 @@
 from uuid import UUID
-from sqlalchemy.orm import Mapped, mapped_column
 from pydantic import BaseModel
 
-
-class User(Base):
-    __tablename__ = "user"
-    name: Mapped[str]
-    email: Mapped[str]
-    is_admin: Mapped[bool] = mapped_column(default=False)
 
 # Pydantic Models
 class UserCreate(BaseModel):

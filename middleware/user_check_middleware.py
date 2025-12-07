@@ -5,8 +5,10 @@ from litestar.middleware import ASGIMiddleware
 from litestar.types import Scope, Receive, Send
 from litestar.response import Response
 from litestar.status_codes import HTTP_401_UNAUTHORIZED, HTTP_403_FORBIDDEN, HTTP_500_INTERNAL_SERVER_ERROR
-from sqlalchemy import select
+from sqlalchemy.ext.asyncio import AsyncSession
 from loguru import logger
+
+from orm.user import get_user
 
 if TYPE_CHECKING:
     from clients.db_client import DBClient
@@ -41,11 +43,8 @@ class UserCheckMiddleware(ASGIMiddleware):
         db_client: "DBClient" = scope["state"]["db_client"]
         
         try:
-            async with db_client.engine.connect() as conn:
-                from api_models.user import User
-                stmt = select(User).where(User.id == user_id)
-                result = await conn.execute(stmt)
-                user = result.scalars().first()
+            async with AsyncSession(db_client.engine) as session:
+                user = await get_user(session, user_id)
                 
                 if not user:
                     response = Response(
