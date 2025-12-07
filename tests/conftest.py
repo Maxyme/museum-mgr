@@ -10,8 +10,10 @@ def db_url():
     return settings.DB_URL
 
 @pytest.fixture(scope="session")
-def db_client(db_url):
-    return DBClient(db_url)
+async def db_client(db_url):
+    client = DBClient(db_url=db_url)
+    yield client
+    await client.close()
 
 @pytest.fixture(autouse=True)
 async def setup_db(db_client):

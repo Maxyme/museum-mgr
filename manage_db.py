@@ -2,6 +2,7 @@ import argparse
 import asyncio
 import logging
 import sys
+from sqlalchemy.ext.asyncio import create_async_engine # No longer needed here
 
 from api_app import settings
 from clients.db_client import DBClient
@@ -17,15 +18,17 @@ async def main():
     # Command: clear
     subparsers.add_parser("clear", help="Clear all data from the database")
 
-    # Command: create (optional, good for checking create_all)
-    # The user asked for create_all methods, effectively used for tests,
-    # but having it accessible here doesn't hurt.
+    # Command: create
     subparsers.add_parser("create", help="Create all tables (if not existing)")
+
+    # Command: seed
+    subparsers.add_parser("seed", help="Seed the database with initial data")
 
     args = parser.parse_args()
 
-    client = DBClient(settings.DB_URL)
-
+    # Manually create client
+    client = DBClient(db_url=settings.DB_URL)
+    
     try:
         if args.command == "clear":
             logger.info("Clearing database...")
@@ -33,12 +36,17 @@ async def main():
         elif args.command == "create":
             logger.info("Creating tables...")
             await client.create_all()
+        elif args.command == "seed":
+            logger.info("Seeding database...")
+            await client.seed_db()
         else:
             parser.print_help()
             sys.exit(1)
     except Exception as e:
         logger.error(f"Error executing {args.command}: {e}")
         sys.exit(1)
+    finally:
+        await client.close() # Close the client's engine
 
 if __name__ == "__main__":
     asyncio.run(main())

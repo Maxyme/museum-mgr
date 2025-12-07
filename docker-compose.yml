@@ -9,6 +9,7 @@ services:
       - "5432:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
+      - ./init_db.sh:/docker-entrypoint-initdb.d/init_db.sh
 
   api:
     build: .
@@ -17,6 +18,18 @@ services:
       - "8000:8000"
     environment:
       - DB_URL=postgresql+asyncpg://postgres:password@db:5432/museum_db
+      - BROKER_URL=postgresql://postgres:password@db:5432/broker_db
+    depends_on:
+      - db
+
+  worker:
+    build: .
+    # Initialize the broker schema then start the worker
+    # asyncmq might need explicit init, for now we run the app which creates broker
+    command: python worker_app.py
+    environment:
+      - DB_URL=postgresql+asyncpg://postgres:password@db:5432/museum_db
+      - BROKER_URL=postgresql://postgres:password@db:5432/broker_db
     depends_on:
       - db
 

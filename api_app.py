@@ -1,15 +1,18 @@
 from typing import TYPE_CHECKING
+from contextlib import asynccontextmanager
 
-from litestar import Litestar, get, post
+from litestar import Litestar
 from litestar.contrib.sqlalchemy.plugins import SQLAlchemyAsyncConfig, SQLAlchemyPlugin
-from litestar.status_codes import HTTP_201_CREATED
 from pydantic_settings import BaseSettings
-from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy.ext.asyncio import create_async_engine # This import might be removed if not used for plugin config
 
-from orm import museum as museum_repo
 from clients.db_client import DBClient
-from api_models.museum import MuseumCreate, MuseumRead
+from clients.worker_client import WorkerClient
 from controllers.health import HealthController
+from controllers.museum import MuseumController
+from middleware.logging_middleware import LoguruMiddleware
+from middleware.user_check_middleware import UserCheckMiddleware
+from exception_handlers import internal_server_error_handler
 
 if TYPE_CHECKING:
     from sqlalchemy.ext.asyncio import AsyncSession
@@ -17,26 +20,28 @@ if TYPE_CHECKING:
 
 class AppSettings(BaseSettings):
     DB_URL: str
-
+    BROKER_URL: str
 
 settings = AppSettings()
 
-async def on_startup() -> None:
-    db_client = DBClient(settings.DB_URL)
+
+@asynccontextmanager
+async def lifespan(app: Litestar):
+    # Setup
+    db_client = DBClient(db_url=settings.DB_URL) # Only pass URL
+    worker_client = WorkerClient(broker_url=settings.BROKER_URL)
+    
+    app.state.db_client = db_client
+    app.state.worker_client = worker_client
+    
+    # Wait for DB to be ready
     await db_client.wait_for_db(timeout=5)
-
-
-# Route
-@post("/museums", status_code=HTTP_201_CREATED)
-async def create_museum(
-    data: MuseumCreate, db_session: AsyncSession
-) -> MuseumRead:
-    return await museum_repo.create_museum(db_session, data)
-
-
-@get("/museums")
-async def list_museums(db_session: AsyncSession) -> list[MuseumRead]:
-    return await museum_repo.list_museums(db_session)
+    
+    yield
+    
+    # Teardown
+    await db_client.close() # Call close on the client
+    # No explicit engine.dispose() here as DBClient manages it
 
 
 # Database Configuration
@@ -48,7 +53,9 @@ db_config = SQLAlchemyAsyncConfig(
 
 # App
 app = Litestar(
-    route_handlers=[create_museum, list_museums, HealthController],
+    route_handlers=[MuseumController, HealthController],
     plugins=[SQLAlchemyPlugin(config=db_config)],
-    on_startup=[on_startup],
+    lifespan=[lifespan],
+    middleware=[LoguruMiddleware, UserCheckMiddleware],
+    exception_handlers={Exception: internal_server_error_handler},
 )

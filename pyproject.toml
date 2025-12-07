@@ -21,6 +21,8 @@ dependencies = [
     "advanced-alchemy>=0.19.3",
     "alembic>=1.13.1",
     "polyfactory>=2.15.0",
+    "loguru>=0.7.2",
+    "asyncmq[postgres]>=0.14.0",
 ]
 dependency-groups.dev = [
     "pytest>=8.3.4",
