@@ -125,6 +125,7 @@ class DBClient:
                 conn.add(new_user)
                 
             logger.info(f"Database seeded with user: {new_user.name} ({new_user.email})")
+            return new_user
         except Exception as e:
             logger.error(f"Failed to seed database: {e}")
             raise

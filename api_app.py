@@ -2,18 +2,19 @@ from typing import TYPE_CHECKING
 from contextlib import asynccontextmanager
 
 from litestar import Litestar
+from litestar.di import Provide
 from litestar.middleware import DefineMiddleware
 from litestar.middleware.logging import LoggingMiddlewareConfig
 from litestar.contrib.sqlalchemy.plugins import SQLAlchemyAsyncConfig, SQLAlchemyPlugin
 from pydantic_settings import BaseSettings
-from sqlalchemy.ext.asyncio import create_async_engine # This import might be removed if not used for plugin config
 
 from clients.db_client import DBClient
 from clients.worker_client import WorkerClient
 from controllers.health import HealthController
 from controllers.museum import MuseumController
 from controllers.user import UserController
-from middleware.custom_middleware import RequestIDMiddleware, UserCheckMiddleware
+from middleware.request_id_middleware import RequestIDMiddleware
+from middleware.user_check_middleware import UserCheckMiddleware
 from exception_handlers import internal_server_error_handler
 
 if TYPE_CHECKING:
@@ -26,7 +27,6 @@ class AppSettings(BaseSettings):
 
 settings = AppSettings()
 
-
 @asynccontextmanager
 async def lifespan(app: Litestar):
     # Setup
@@ -36,16 +36,13 @@ async def lifespan(app: Litestar):
     app.state.db_client = db_client
     app.state.worker_client = worker_client
     
-    # Wait for DB to be ready - Implicitly handled by client methods now, 
-    # but explicitly waiting once on startup is still good to fail fast before serving requests.
-    # I'll keep it for the app startup check, but the decorator ensures safety for individual calls.
+    # Wait for DB to be ready
     await db_client.wait_for_db(timeout=5)
     
     yield
     
     # Teardown
     await db_client.close() # Call close on the client
-    # No explicit engine.dispose() here as DBClient manages it
 
 
 # Database Configuration
