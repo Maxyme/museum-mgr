@@ -13,3 +13,12 @@ build:
 
 run-docker population="10000":
     docker run -v {{justfile_directory()}}/cache:/app/cache museum-mgr {{population}}
+
+create-migration MESSAGE:
+    uv run alembic revision --autogenerate -m "{{MESSAGE}}"
+
+migrate:
+    uv run alembic upgrade head
+
+clear-db:
+    uv run python manage_db.py clear

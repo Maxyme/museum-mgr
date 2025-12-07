@@ -1,0 +1,11 @@
+[project]
+name = "api-tester"
+version = "0.1.0"
+description = "E2E API Tester"
+requires-python = ">=3.13"
+dependencies = [
+    "httpx>=0.27.0",
+    "pytest>=8.0.0",
+    "polyfactory>=2.15.0",
+    "pydantic>=2.0.0"
+]
