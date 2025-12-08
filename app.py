@@ -17,17 +17,8 @@ from controllers.user import UserController
 from middleware.request_id_middleware import RequestIDMiddleware
 from middleware.user_check_middleware import UserCheckMiddleware
 from exception_handlers import internal_server_error_handler
+from settings import settings
 
-if TYPE_CHECKING:
-    from sqlalchemy.ext.asyncio import AsyncSession
-
-
-class Settings(BaseSettings):
-    model_config = SettingsConfigDict(env_file='.env', env_file_encoding='utf-8')
-    DB_URL: str
-    BROKER_URL: str
-
-settings = Settings()
 
 @asynccontextmanager
 async def lifespan(app: Litestar):

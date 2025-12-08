@@ -6,7 +6,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from orm import museum as museum_repo
 from api_models.museum import MuseumCreate, MuseumRead
 from clients.worker_client import WorkerClient
-
+from worker_app import log_museum_created
 class MuseumController(Controller):
     path = "/museums"
 
@@ -18,13 +18,16 @@ class MuseumController(Controller):
         
         # Send task to worker using the client in state
         worker_client: WorkerClient = state.worker_client
-        await worker_client.send_task(
-            queue_name="museum_tasks", 
-            task_name="log_museum_created", 
-            museum_id=str(museum.id), 
-            city=museum.city
-        )
-        
+        from asyncmq.queues import Queue
+        q = Queue("museums")
+        await log_museum_created.enqueue(museum.id, museum.city, backend=q.backend, delay=10)
+        # await worker_client.send_task(
+        #     queue_name="museum_tasks",
+        #     task_name="log_museum_created",
+        #     museum_id=str(museum.id),
+        #     city=museum.city
+        # )
+        #
         return MuseumRead.model_validate(museum)
 
     @get("/")
