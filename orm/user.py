@@ -11,6 +11,8 @@ from sqlalchemy import update
 async def create_user(session: AsyncSession, data: UserCreate) -> User:
     user = User(name=data.name, email=data.email, is_admin=data.is_admin)
     session.add(user)
+    await session.flush()
+    await session.refresh(user)
     return user
 
 async def get_user(session: AsyncSession, user_id: UUID) -> User | None:

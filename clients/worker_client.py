@@ -1,7 +1,8 @@
 import logging
+import uuid
 import asyncio
 from dataclasses import dataclass
-from asyncmq.backends.postgres import PostgresBackend # Modified import
+from asyncmq.backends.postgres import PostgresBackend
 
 logger = logging.getLogger(__name__)
 
@@ -14,11 +15,10 @@ class WorkerClient:
         Check if the broker is reachable.
         """
         try:
-            # backend = PostgresBackend(dsn=self.broker_url) # Instantiate backend
-            # await backend.connect() # Explicitly connect
-            # await backend.disconnect() # Explicitly disconnect
-            # We assume create_broker verifies connection
-            # await create_broker(self.broker_url)
+            dsn = self.broker_url.replace("+asyncpg", "")
+            backend = PostgresBackend(dsn=dsn)
+            await backend.connect()
+            await backend.disconnect()
             return True
         except Exception as e:
             logger.error(f"Failed to connect to broker: {e}")
@@ -29,12 +29,19 @@ class WorkerClient:
         Send a task to the worker queue.
         """
         try:
-            backend = PostgresBackend(dsn=self.broker_url) # Instantiate backend
-            await backend.connect() # Explicitly connect
-            await backend.send(queue_name, task_name, **kwargs) # Use backend.send
-            await backend.disconnect() # Explicitly disconnect
-            # broker = await create_broker(self.broker_url)
-            # await broker.send(queue_name, task_name, **kwargs)
+            dsn = self.broker_url.replace("+asyncpg", "")
+            backend = PostgresBackend(dsn=dsn)
+            await backend.connect()
+            
+            payload = {
+                "id": str(uuid.uuid4()),
+                "task": task_name,
+                "args": [],
+                "kwargs": kwargs,
+            }
+            
+            await backend.enqueue(queue_name, payload)
+            await backend.disconnect()
         except Exception as e:
             logger.error(f"Failed to send task {task_name}: {e}")
             raise

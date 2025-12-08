@@ -55,7 +55,8 @@ app = Litestar(
     lifespan=[lifespan],
     middleware=[
         LoggingMiddlewareConfig().middleware,
-        # Custom middlewares removed temporarily for debugging
+        DefineMiddleware(RequestIDMiddleware),
+        DefineMiddleware(UserCheckMiddleware),
     ],
     exception_handlers={Exception: internal_server_error_handler},
 )

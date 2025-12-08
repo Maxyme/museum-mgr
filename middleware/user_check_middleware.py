@@ -13,7 +13,10 @@ from orm.user import get_user
 if TYPE_CHECKING:
     from clients.db_client import DBClient
 
-class UserCheckMiddleware(ASGIMiddleware):
+class UserCheckMiddleware:
+    def __init__(self, app):
+        self.app = app
+
     async def __call__(self, scope: Scope, receive: Receive, send: Send) -> None:
         if scope["type"] != "http":
             await self.app(scope, receive, send)
@@ -40,8 +43,23 @@ class UserCheckMiddleware(ASGIMiddleware):
             await response(scope, receive, send)
             return
 
-        db_client: "DBClient" = scope["state"]["db_client"]
+        logger.info(f"Middleware Scope Keys: {scope.keys()}")
         
+        db_client: "DBClient" | None = None
+        if "state" in scope and "db_client" in scope["state"]:
+            db_client = scope["state"]["db_client"]
+        elif "app" in scope:
+             db_client = getattr(scope["app"].state, "db_client", None)
+        
+        if not db_client:
+             logger.error("DB Client not found in scope state or app state")
+             response = Response(
+                {"detail": "Server Configuration Error"}, 
+                status_code=HTTP_500_INTERNAL_SERVER_ERROR
+            )
+             await response(scope, receive, send)
+             return
+
         try:
             async with AsyncSession(db_client.engine) as session:
                 user = await get_user(session, user_id)

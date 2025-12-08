@@ -18,18 +18,20 @@ class UserController(Controller):
     async def create_user(
         self, data: UserCreate, db_session: AsyncSession
     ) -> UserRead:
-        return await user_repo.create_user(db_session, data)
+        user = await user_repo.create_user(db_session, data)
+        return UserRead.model_validate(user)
 
     @get("/")
     async def list_users(self, db_session: AsyncSession) -> list[UserRead]:
-        return await user_repo.list_users(db_session)
+        users = await user_repo.list_users(db_session)
+        return [UserRead.model_validate(u) for u in users]
 
     @get("/{user_id:uuid}")
     async def get_user(self, user_id: UUID, db_session: AsyncSession) -> UserRead:
         user = await user_repo.get_user(db_session, user_id)
         if not user:
             raise NotFoundException(f"User {user_id} not found")
-        return user
+        return UserRead.model_validate(user)
 
     @patch("/{user_id:uuid}")
     async def update_user(
@@ -38,4 +40,4 @@ class UserController(Controller):
         user = await user_repo.update_user(db_session, user_id, data)
         if not user:
             raise NotFoundException(f"User {user_id} not found")
-        return user
+        return UserRead.model_validate(user)

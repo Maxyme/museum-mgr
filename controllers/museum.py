@@ -25,8 +25,9 @@ class MuseumController(Controller):
             city=museum.city
         )
         
-        return museum
+        return MuseumRead.model_validate(museum)
 
     @get("/")
     async def list_museums(self, db_session: AsyncSession) -> list[MuseumRead]:
-        return await museum_repo.list_museums(db_session)
+        museums = await museum_repo.list_museums(db_session)
+        return [MuseumRead.model_validate(m) for m in museums]

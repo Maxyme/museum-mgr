@@ -27,8 +27,8 @@ async def setup_db(db_client: DBClient):
     await db_client.create_all()
     await db_client.seed_db() # Seed the admin user here
 
-@pytest.fixture(scope="session")
-async def admin_user_id(db_client: DBClient): # Depend on setup_db to ensure it runs
+@pytest.fixture
+async def admin_user_id(db_client: DBClient, setup_db): # Depend on setup_db to ensure it runs
     # Query for the admin user seeded in setup_db
     # This requires a session. We'll reuse the db_client's engine and create a temporary session.
     async_session = async_sessionmaker(db_client.engine, expire_on_commit=False)

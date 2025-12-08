@@ -3,7 +3,10 @@ from litestar.middleware import ASGIMiddleware
 from litestar.types import Scope, Receive, Send
 from loguru import logger
 
-class RequestIDMiddleware(ASGIMiddleware):
+class RequestIDMiddleware:
+    def __init__(self, app):
+        self.app = app
+
     async def __call__(self, scope: Scope, receive: Receive, send: Send) -> None:
         if scope["type"] == "http":
             request_id = str(uuid4())

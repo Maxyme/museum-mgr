@@ -11,6 +11,8 @@ from orm.models.museum import Museum
 async def create_museum(session: AsyncSession, data: MuseumCreate) -> Museum:
     museum = Museum(city=data.city, population=data.population)
     session.add(museum)
+    await session.flush()
+    await session.refresh(museum)
     return museum
 
 

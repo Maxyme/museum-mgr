@@ -3,7 +3,7 @@ import logging
 from dataclasses import dataclass, field
 from functools import wraps
 
-from sqlalchemy.ext.asyncio import AsyncEngine, create_async_engine
+from sqlalchemy.ext.asyncio import AsyncEngine, create_async_engine, async_sessionmaker
 from sqlalchemy import text, select
 from sqlalchemy import create_engine 
 
@@ -113,16 +113,19 @@ class DBClient:
     async def seed_db(self) -> None:
         """Seeds the database with an initial user."""
         try:
-            async with self.engine.begin() as conn:
-                # Check if any user exists
-                result = await conn.execute(select(User))
-                if result.scalars().first():
-                    logger.info("Database already contains users. Skipping seed.")
-                    return
+            # We need a session to add ORM objects
+            session_maker = async_sessionmaker(self.engine, expire_on_commit=False)
+            async with session_maker() as session:
+                async with session.begin():
+                    # Check if any user exists
+                    result = await session.execute(select(User))
+                    if result.scalars().first():
+                        logger.info("Database already contains users. Skipping seed.")
+                        return
 
-                # Create a default user
-                new_user = User(name="Admin User", email="admin@museum.com", is_admin=True)
-                conn.add(new_user)
+                    # Create a default user
+                    new_user = User(name="Admin User", email="admin@museum.com", is_admin=True)
+                    session.add(new_user)
                 
             logger.info(f"Database seeded with user: {new_user.name} ({new_user.email})")
             return new_user
