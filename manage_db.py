@@ -4,7 +4,7 @@ import logging
 import sys
 from sqlalchemy.ext.asyncio import create_async_engine # No longer needed here
 
-from api_app import settings
+from app import settings
 from clients.db_client import DBClient
 
 # Configure logging

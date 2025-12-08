@@ -2,7 +2,7 @@ import pytest
 from litestar.testing import AsyncTestClient
 from sqlalchemy.ext.asyncio import async_sessionmaker, create_async_engine
 
-from api_app import app, settings
+from app import app, settings
 from clients.db_client import DBClient
 from orm.models.user import User
 from sqlalchemy import select

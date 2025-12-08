@@ -34,7 +34,7 @@ RUN groupadd --system --gid 999 nonroot \
 COPY --from=builder --chown=python:python /python /python
 
 # Copy the .venv from the builder
-COPY --from=builder --chown=nonroot:nonroot /app/.venv /app/.venv
+COPY --from=builder --chown=nonroot:nonroot .venv /app/.venv
 
 # Place executables in the environment at the front of the path
 ENV PATH="/app/.venv/bin:$PATH"

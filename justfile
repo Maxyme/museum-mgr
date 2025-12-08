@@ -8,6 +8,13 @@ format:
 test:
     uv run pytest tests/ -v
 
+test-all:
+    uv run pytest tests/ -v
+
+start-api:
+    # Start api with litestar for debugging
+    uv run litestar run
+
 build:
     docker build -t museum-mgr .
 

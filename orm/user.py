@@ -6,6 +6,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from orm.models.user import User
 from api_models.user import UserCreate, UserUpdate
+from sqlalchemy import update
 
 async def create_user(session: AsyncSession, data: UserCreate) -> User:
     user = User(name=data.name, email=data.email, is_admin=data.is_admin)
@@ -30,5 +31,8 @@ async def update_user(session: AsyncSession, user_id: UUID, data: UserUpdate) ->
         user.email = data.email
     if data.is_admin is not None:
         user.is_admin = data.is_admin
-        
+
+    # stmt = update(User).where(User.id == user_id).values({"name": data.name, "email": data.email, "is_admin": data.is_admin})
+    # await session.query(Stuff).update({Stuff.foo: Stuff.foo + 1})
+
     return user

@@ -30,7 +30,7 @@ target_metadata = Base.metadata
 # my_important_option = config.get_main_option("my_important_option")
 # ... etc.
 
-from api_app import settings
+from app import settings
 # Overwrite sqlalchemy.url with the one from settings
 config.set_main_option("sqlalchemy.url", settings.DB_URL)
 
