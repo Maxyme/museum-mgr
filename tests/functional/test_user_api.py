@@ -2,7 +2,6 @@ import pytest
 import httpx
 from polyfactory.factories.pydantic_factory import ModelFactory
 from api_models.user import UserCreate, UserRead, UserUpdate
-from tests.factories import MuseumCreateFactory # User factory needed too
 from uuid import UUID
 
 class UserCreateFactory(ModelFactory[UserCreate]):

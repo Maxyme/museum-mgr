@@ -31,7 +31,7 @@ RUN groupadd --system --gid 999 nonroot \
  && useradd --system --gid 999 --uid 999 --create-home nonroot
 
 # Copy Python from the build stage
-COPY --from=builder --chown=python:python /python /python
+COPY --from=builder --chown=nonroot:nonroot /python /python
 
 # Copy the .venv from the builder
 COPY --from=builder --chown=nonroot:nonroot .venv /app/.venv
@@ -43,6 +43,6 @@ ENV PATH="/app/.venv/bin:$PATH"
 USER nonroot
 
 # Copy the application from the builder
-COPY . /app
+COPY --chown=nonroot:nonroot . /app
 
 ENTRYPOINT ["python", "main.py"]

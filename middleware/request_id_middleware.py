@@ -1,5 +1,4 @@
 from uuid import uuid4
-from litestar.middleware import ASGIMiddleware
 from litestar.types import Scope, Receive, Send
 from loguru import logger
 

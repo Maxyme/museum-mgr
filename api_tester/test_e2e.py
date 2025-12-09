@@ -1,6 +1,5 @@
-import pytest
 from polyfactory.factories.pydantic_factory import ModelFactory
-from models import MuseumCreate, MuseumRead
+from models import MuseumCreate
 
 class MuseumCreateFactory(ModelFactory[MuseumCreate]):
     __model__ = MuseumCreate

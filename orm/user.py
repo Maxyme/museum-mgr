@@ -6,7 +6,6 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from orm.models.user import User
 from api_models.user import UserCreate, UserUpdate
-from sqlalchemy import update
 
 async def create_user(session: AsyncSession, data: UserCreate) -> User:
     user = User(name=data.name, email=data.email, is_admin=data.is_admin)

@@ -8,12 +8,22 @@ format:
 test:
     uv run pytest tests/ -v
 
+test-functional:
+    docker compose up -d db
+    uv run python manage_db.py wait
+    just migrate
+    docker compose up -d api worker
+    cd api_tester && API_URL="http://localhost:8000" uv run pytest test_e2e.py
+
 test-all:
     uv run pytest tests/ -v
 
 start-api:
     # Start api with litestar for debugging
     uv run litestar run
+
+start-worker:
+     pgq run worker_app:main
 
 build:
     docker build -t museum-mgr .
@@ -26,6 +36,7 @@ create-migration MESSAGE:
 
 migrate:
     uv run alembic upgrade head
+    uv run python manage_db.py install-queue
 
 clear-db:
     uv run python manage_db.py clear

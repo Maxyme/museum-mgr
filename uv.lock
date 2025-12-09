@@ -54,22 +54,12 @@ wheels = [
 ]
 
 [[package]]
-name = "asyncmq"
-version = "0.6.0"
+name = "async-timeout"
+version = "5.0.1"
 source = { registry = "https://pypi.org/simple" }
-dependencies = [
-    { name = "croniter" },
-    { name = "lilya", extra = ["standard"] },
-    { name = "redis" },
-]
-sdist = { url = "https://files.pythonhosted.org/packages/aa/32/0f58ade4e619e7692dde06471ab6bc75316e8983a26bfd3d7778be44f8bd/asyncmq-0.6.0.tar.gz", hash = "sha256:5232a17a217bd2f0af2dd3ab7854d22e4b23f83c9fac0df841a35705bdd8fda4", size = 150591, upload-time = "2025-11-11T17:41:20.597Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/a5/ae/136395dfbfe00dfc94da3f3e136d0b13f394cba8f4841120e34226265780/async_timeout-5.0.1.tar.gz", hash = "sha256:d9321a7a3d5a6a5e187e824d2fa0793ce379a202935782d555d6e9d2735677d3", size = 9274, upload-time = "2024-11-06T16:41:39.6Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/ff/f3/100a8cc2d38fe76ac0966330387262307e830568fa7fb7c21865c0ff98cd/asyncmq-0.6.0-py3-none-any.whl", hash = "sha256:07886a725be71f029c8a4f3173dddbab8f347f97d9e93ea0d43866efde34a94a", size = 200950, upload-time = "2025-11-11T17:41:19.303Z" },
-]
-
-[package.optional-dependencies]
-postgres = [
-    { name = "asyncpg" },
+    { url = "https://files.pythonhosted.org/packages/fe/ba/e2081de779ca30d473f21f5b30e0e737c438205440784c7dfc81efc2b029/async_timeout-5.0.1-py3-none-any.whl", hash = "sha256:39e3809566ff85354557ec2398b55e096c8364bacac9405a7a1fa429e77fe76c", size = 6233, upload-time = "2024-11-06T16:41:37.9Z" },
 ]
 
 [[package]]
@@ -346,15 +336,6 @@ wheels = [
 ]
 
 [[package]]
-name = "itsdangerous"
-version = "2.2.0"
-source = { registry = "https://pypi.org/simple" }
-sdist = { url = "https://files.pythonhosted.org/packages/9c/cb/8ac0172223afbccb63986cc25049b154ecfb5e85932587206f42317be31d/itsdangerous-2.2.0.tar.gz", hash = "sha256:e0050c0b7da1eea53ffaf149c0cfbb5c6e2e2b69c4bef22c81fa6eb73e5f6173", size = 54410, upload-time = "2024-04-16T21:28:15.614Z" }
-wheels = [
-    { url = "https://files.pythonhosted.org/packages/04/96/92447566d16df59b2a776c0fb82dbc4d9e07cd95062562af01e408583fc4/itsdangerous-2.2.0-py3-none-any.whl", hash = "sha256:c6242fc49e35958c8b15141343aa660db5fc54d4f13a1db01a3f5891b98700ef", size = 16234, upload-time = "2024-04-16T21:28:14.499Z" },
-]
-
-[[package]]
 name = "jinja2"
 version = "3.1.6"
 source = { registry = "https://pypi.org/simple" }
@@ -386,29 +367,6 @@ dependencies = [
 sdist = { url = "https://files.pythonhosted.org/packages/ea/98/d6cadf4d5a1c03b2136837a435682418c29fdeb66be137128544cecc5b7a/jsbeautifier-1.15.4.tar.gz", hash = "sha256:5bb18d9efb9331d825735fbc5360ee8f1aac5e52780042803943aa7f854f7592", size = 75257, upload-time = "2025-02-27T17:53:53.252Z" }
 wheels = [
     { url = "https://files.pythonhosted.org/packages/2d/14/1c65fccf8413d5f5c6e8425f84675169654395098000d8bddc4e9d3390e1/jsbeautifier-1.15.4-py3-none-any.whl", hash = "sha256:72f65de312a3f10900d7685557f84cb61a9733c50dcc27271a39f5b0051bf528", size = 94707, upload-time = "2025-02-27T17:53:46.152Z" },
-]
-
-[[package]]
-name = "lilya"
-version = "0.23.0"
-source = { registry = "https://pypi.org/simple" }
-dependencies = [
-    { name = "anyio" },
-    { name = "monkay" },
-    { name = "multidict" },
-]
-sdist = { url = "https://files.pythonhosted.org/packages/12/ba/d054c43015e4d6f0c7cbb7bdda661d83f393c8245701cb5dd56ffe2df371/lilya-0.23.0.tar.gz", hash = "sha256:246e4b53a009de220eaa36af97795c179b653cc0ef64914a1896d3bbe1549a30", size = 266701, upload-time = "2025-12-02T11:11:21.752Z" }
-wheels = [
-    { url = "https://files.pythonhosted.org/packages/ea/2a/9c237aa5459fbd7693c6eea17fe62f0c1c4c141b280a269a04269b73c705/lilya-0.23.0-py3-none-any.whl", hash = "sha256:6d09f54586572b8464f0a2ab0450b510369a3902d4705865aa9b5dd2c86545cf", size = 374120, upload-time = "2025-12-02T11:11:19.849Z" },
-]
-
-[package.optional-dependencies]
-standard = [
-    { name = "itsdangerous" },
-    { name = "jinja2" },
-    { name = "rich-toolkit" },
-    { name = "sayer" },
-    { name = "uvicorn", extra = ["standard"] },
 ]
 
 [[package]]
@@ -578,15 +536,6 @@ wheels = [
 ]
 
 [[package]]
-name = "monkay"
-version = "0.5.1"
-source = { registry = "https://pypi.org/simple" }
-sdist = { url = "https://files.pythonhosted.org/packages/21/25/14b5cb70992773ee10704da9f4b724b1d2e027e5ca56f916778294bd849b/monkay-0.5.1.tar.gz", hash = "sha256:b2caf99a0fdc59df75440d7d5c295b7379fd410b862370b5ccbefb3ae16a99dc", size = 54511, upload-time = "2025-10-16T12:30:45.067Z" }
-wheels = [
-    { url = "https://files.pythonhosted.org/packages/c4/6d/91cfc81882f6cbb605f25e2f720a8d15feaa0f7d130df7cfccc7ea4f9540/monkay-0.5.1-py3-none-any.whl", hash = "sha256:4a6bb8179f799b79f3a8cb24381addec4651e3487e69138010f439b9f4871e8b", size = 29847, upload-time = "2025-10-16T12:30:43.896Z" },
-]
-
-[[package]]
 name = "mpmath"
 version = "1.3.0"
 source = { registry = "https://pypi.org/simple" }
@@ -724,7 +673,6 @@ source = { virtual = "." }
 dependencies = [
     { name = "advanced-alchemy" },
     { name = "alembic" },
-    { name = "asyncmq", extra = ["postgres"] },
     { name = "asyncpg" },
     { name = "beautifulsoup4" },
     { name = "httpx" },
@@ -734,6 +682,7 @@ dependencies = [
     { name = "onnx" },
     { name = "onnxruntime" },
     { name = "peewee" },
+    { name = "pgqueuer" },
     { name = "polars" },
     { name = "polyfactory" },
     { name = "pydantic-settings" },
@@ -754,7 +703,6 @@ dev = [
 requires-dist = [
     { name = "advanced-alchemy", specifier = ">=0.19.3" },
     { name = "alembic", specifier = ">=1.13.1" },
-    { name = "asyncmq", extras = ["postgres"], specifier = ">=0.6.0" },
     { name = "asyncpg", specifier = ">=0.30.0" },
     { name = "beautifulsoup4", specifier = ">=4.14.2" },
     { name = "httpx", specifier = ">=0.28.1" },
@@ -764,6 +712,7 @@ requires-dist = [
     { name = "onnx", specifier = ">=1.19.1" },
     { name = "onnxruntime", specifier = ">=1.23.2" },
     { name = "peewee", specifier = ">=3.18.2" },
+    { name = "pgqueuer", specifier = ">=0.25.3" },
     { name = "polars", specifier = ">=1.16.0" },
     { name = "polyfactory", specifier = ">=2.15.0" },
     { name = "pydantic-settings", specifier = ">=2.6.1" },
@@ -893,6 +842,25 @@ name = "peewee"
 version = "3.18.2"
 source = { registry = "https://pypi.org/simple" }
 sdist = { url = "https://files.pythonhosted.org/packages/04/89/76f6f1b744c8608e0d416b588b9d63c2a500ff800065ae610f7c80f532d6/peewee-3.18.2.tar.gz", hash = "sha256:77a54263eb61aff2ea72f63d2eeb91b140c25c1884148e28e4c0f7c4f64996a0", size = 949220, upload-time = "2025-07-08T12:52:03.941Z" }
+
+[[package]]
+name = "pgqueuer"
+version = "0.25.3"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "anyio" },
+    { name = "async-timeout" },
+    { name = "croniter" },
+    { name = "pydantic" },
+    { name = "pydantic-settings" },
+    { name = "tabulate" },
+    { name = "typer" },
+    { name = "uvloop", marker = "sys_platform != 'win32'" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/db/16/0b7e68597d10110283bf98679aa72139ab43415215f1adc7fa03035373ab/pgqueuer-0.25.3.tar.gz", hash = "sha256:542f109073ed7266dfca890dda0dc234b980d1ccd8e9a3bd18fd1a6580c1a7e4", size = 322103, upload-time = "2025-12-03T08:05:48.101Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/35/7d/450c3a013c47b517c99bd76ee05c0a5de2acae14065ffa40c3fa7c199ff3/pgqueuer-0.25.3-py3-none-any.whl", hash = "sha256:0dc29f95d6eec6809d54b954185239c9f9fd2af8567493beaae8245bf1f768c3", size = 69407, upload-time = "2025-12-03T08:05:46.836Z" },
+]
 
 [[package]]
 name = "pluggy"
@@ -1152,15 +1120,6 @@ wheels = [
 ]
 
 [[package]]
-name = "redis"
-version = "7.1.0"
-source = { registry = "https://pypi.org/simple" }
-sdist = { url = "https://files.pythonhosted.org/packages/43/c8/983d5c6579a411d8a99bc5823cc5712768859b5ce2c8afe1a65b37832c81/redis-7.1.0.tar.gz", hash = "sha256:b1cc3cfa5a2cb9c2ab3ba700864fb0ad75617b41f01352ce5779dabf6d5f9c3c", size = 4796669, upload-time = "2025-11-19T15:54:39.961Z" }
-wheels = [
-    { url = "https://files.pythonhosted.org/packages/89/f0/8956f8a86b20d7bb9d6ac0187cf4cd54d8065bc9a1a09eb8011d4d326596/redis-7.1.0-py3-none-any.whl", hash = "sha256:23c52b208f92b56103e17c5d06bdc1a6c2c0b3106583985a76a18f83b265de2b", size = 354159, upload-time = "2025-11-19T15:54:38.064Z" },
-]
-
-[[package]]
 name = "rich"
 version = "14.2.0"
 source = { registry = "https://pypi.org/simple" }
@@ -1188,20 +1147,6 @@ wheels = [
 ]
 
 [[package]]
-name = "rich-toolkit"
-version = "0.17.0"
-source = { registry = "https://pypi.org/simple" }
-dependencies = [
-    { name = "click" },
-    { name = "rich" },
-    { name = "typing-extensions" },
-]
-sdist = { url = "https://files.pythonhosted.org/packages/ad/d0/8f8de36e1abf8339b497ce700dd7251ca465ffca4a1976969b0eaeb596fb/rich_toolkit-0.17.0.tar.gz", hash = "sha256:17ca7a32e613001aa0945ddea27a246f6de01dfc4c12403254c057a8ee542977", size = 187955, upload-time = "2025-11-27T11:10:24.863Z" }
-wheels = [
-    { url = "https://files.pythonhosted.org/packages/b2/42/ef2ed40699567661d03b0b511ac46cf6cee736de8f3666819c12d6d20696/rich_toolkit-0.17.0-py3-none-any.whl", hash = "sha256:06fb47a5c5259d6b480287cd38aff5f551b6e1a307f90ed592453dd360e4e71e", size = 31412, upload-time = "2025-11-27T11:10:23.847Z" },
-]
-
-[[package]]
 name = "ruff"
 version = "0.14.8"
 source = { registry = "https://pypi.org/simple" }
@@ -1225,22 +1170,6 @@ wheels = [
     { url = "https://files.pythonhosted.org/packages/5d/93/2a5063341fa17054e5c86582136e9895db773e3c2ffb770dde50a09f35f0/ruff-0.14.8-py3-none-win32.whl", hash = "sha256:15f04cb45c051159baebb0f0037f404f1dc2f15a927418f29730f411a79bc4e7", size = 13151890, upload-time = "2025-12-04T15:06:11.668Z" },
     { url = "https://files.pythonhosted.org/packages/02/1c/65c61a0859c0add13a3e1cbb6024b42de587456a43006ca2d4fd3d1618fe/ruff-0.14.8-py3-none-win_amd64.whl", hash = "sha256:9eeb0b24242b5bbff3011409a739929f497f3fb5fe3b5698aba5e77e8c833097", size = 14537826, upload-time = "2025-12-04T15:06:26.409Z" },
     { url = "https://files.pythonhosted.org/packages/6d/63/8b41cea3afd7f58eb64ac9251668ee0073789a3bc9ac6f816c8c6fef986d/ruff-0.14.8-py3-none-win_arm64.whl", hash = "sha256:965a582c93c63fe715fd3e3f8aa37c4b776777203d8e1d8aa3cc0c14424a4b99", size = 13634522, upload-time = "2025-12-04T15:06:43.212Z" },
-]
-
-[[package]]
-name = "sayer"
-version = "0.7.5"
-source = { registry = "https://pypi.org/simple" }
-dependencies = [
-    { name = "anyio" },
-    { name = "click" },
-    { name = "monkay" },
-    { name = "rich" },
-    { name = "typing-extensions" },
-]
-sdist = { url = "https://files.pythonhosted.org/packages/6a/9d/af1c05dd2f492362c2c1cc96bf7659b27d0d105ccc6447af562ce1f278f8/sayer-0.7.5.tar.gz", hash = "sha256:5ed93a1501b27ab13588de294a986bdca4ddbd399be53e37061c30c5ee2171cd", size = 64384, upload-time = "2025-11-10T21:30:39.749Z" }
-wheels = [
-    { url = "https://files.pythonhosted.org/packages/76/b0/4909fb68b8577088ca1a25a18b9a4119d84e6a3f80b3cfd22390b05a259e/sayer-0.7.5-py3-none-any.whl", hash = "sha256:f39c2abf9f142a8e993f7bba88f6471c354f37e352fd4cfc8c7d44490a88d87f", size = 79319, upload-time = "2025-11-10T21:30:40.835Z" },
 ]
 
 [[package]]
@@ -1324,6 +1253,15 @@ wheels = [
 ]
 
 [[package]]
+name = "shellingham"
+version = "1.5.4"
+source = { registry = "https://pypi.org/simple" }
+sdist = { url = "https://files.pythonhosted.org/packages/58/15/8b3609fd3830ef7b27b655beb4b4e9c62313a4e8da8c676e142cc210d58e/shellingham-1.5.4.tar.gz", hash = "sha256:8dbca0739d487e5bd35ab3ca4b36e11c4078f3a234bfce294b0a0291363404de", size = 10310, upload-time = "2023-10-24T04:13:40.426Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/e0/f9/0595336914c5619e5f28a1fb793285925a8cd4b432c9da0a987836c7f822/shellingham-1.5.4-py2.py3-none-any.whl", hash = "sha256:7ecfff8f2fd72616f7481040475a65b2bf8af90a56c89140852d1120324e8686", size = 9755, upload-time = "2023-10-24T04:13:38.866Z" },
+]
+
+[[package]]
 name = "six"
 version = "1.17.0"
 source = { registry = "https://pypi.org/simple" }
@@ -1402,12 +1340,36 @@ wheels = [
 ]
 
 [[package]]
+name = "tabulate"
+version = "0.9.0"
+source = { registry = "https://pypi.org/simple" }
+sdist = { url = "https://files.pythonhosted.org/packages/ec/fe/802052aecb21e3797b8f7902564ab6ea0d60ff8ca23952079064155d1ae1/tabulate-0.9.0.tar.gz", hash = "sha256:0095b12bf5966de529c0feb1fa08671671b3368eec77d7ef7ab114be2c068b3c", size = 81090, upload-time = "2022-10-06T17:21:48.54Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/40/44/4a5f08c96eb108af5cb50b41f76142f0afa346dfa99d5296fe7202a11854/tabulate-0.9.0-py3-none-any.whl", hash = "sha256:024ca478df22e9340661486f85298cff5f6dcdba14f3813e8830015b9ed1948f", size = 35252, upload-time = "2022-10-06T17:21:44.262Z" },
+]
+
+[[package]]
 name = "threadpoolctl"
 version = "3.6.0"
 source = { registry = "https://pypi.org/simple" }
 sdist = { url = "https://files.pythonhosted.org/packages/b7/4d/08c89e34946fce2aec4fbb45c9016efd5f4d7f24af8e5d93296e935631d8/threadpoolctl-3.6.0.tar.gz", hash = "sha256:8ab8b4aa3491d812b623328249fab5302a68d2d71745c8a4c719a2fcaba9f44e", size = 21274, upload-time = "2025-03-13T13:49:23.031Z" }
 wheels = [
     { url = "https://files.pythonhosted.org/packages/32/d5/f9a850d79b0851d1d4ef6456097579a9005b31fea68726a4ae5f2d82ddd9/threadpoolctl-3.6.0-py3-none-any.whl", hash = "sha256:43a0b8fd5a2928500110039e43a5eed8480b918967083ea48dc3ab9f13c4a7fb", size = 18638, upload-time = "2025-03-13T13:49:21.846Z" },
+]
+
+[[package]]
+name = "typer"
+version = "0.20.0"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "click" },
+    { name = "rich" },
+    { name = "shellingham" },
+    { name = "typing-extensions" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/8f/28/7c85c8032b91dbe79725b6f17d2fffc595dff06a35c7a30a37bef73a1ab4/typer-0.20.0.tar.gz", hash = "sha256:1aaf6494031793e4876fb0bacfa6a912b551cf43c1e63c800df8b1a866720c37", size = 106492, upload-time = "2025-10-20T17:03:49.445Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/78/64/7713ffe4b5983314e9d436a90d5bd4f63b6054e2aca783a3cfc44cb95bbf/typer-0.20.0-py3-none-any.whl", hash = "sha256:5b463df6793ec1dca6213a3cf4c0f03bc6e322ac5e16e13ddd622a889489784a", size = 47028, upload-time = "2025-10-20T17:03:47.617Z" },
 ]
 
 [[package]]

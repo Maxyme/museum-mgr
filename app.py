@@ -1,16 +1,15 @@
-from typing import TYPE_CHECKING
 from contextlib import asynccontextmanager
 
 import uvicorn
+import asyncpg
 from litestar import Litestar
 from litestar.di import Provide
 from litestar.middleware import DefineMiddleware
 from litestar.middleware.logging import LoggingMiddlewareConfig
 from litestar.contrib.sqlalchemy.plugins import SQLAlchemyAsyncConfig, SQLAlchemyPlugin
-from pydantic_settings import BaseSettings, SettingsConfigDict
+from litestar.datastructures import State
 
 from clients.db_client import DBClient
-from clients.worker_client import WorkerClient
 from controllers.health import HealthController
 from controllers.museum import MuseumController
 from controllers.user import UserController
@@ -18,18 +17,34 @@ from middleware.request_id_middleware import RequestIDMiddleware
 from middleware.user_check_middleware import UserCheckMiddleware
 from exception_handlers import internal_server_error_handler
 from settings import settings
+from pgqueuer.db import AsyncpgDriver
+from pgqueuer.qm import QueueManager
 
 
 @asynccontextmanager
 async def lifespan(app: Litestar):
-    db_client = DBClient(db_url=settings.DB_URL) # Only pass URL
-    worker_client = WorkerClient(broker_url=settings.BROKER_URL)
+    db_client = DBClient(db_url=settings.DB_URL)
     app.state.db_client = db_client
-    app.state.worker_client = worker_client
+    
+    # Setup asyncpg pool for pgqueuer
+    pg_url = settings.DB_URL.replace("postgresql+asyncpg://", "postgresql://")
+    pool = await asyncpg.create_pool(pg_url)
+    app.state.pg_pool = pool
+
     await db_client.wait_for_db(timeout=5)
+    
     yield
+    
     # Teardown
-    await db_client.close() # Call close on the client
+    await db_client.close()
+    await pool.close()
+
+async def provide_queue_manager(state: State) -> QueueManager:
+    """Provides a QueueManager instance using a connection from the pool."""
+    pool: asyncpg.Pool = state.pg_pool
+    async with pool.acquire() as connection:
+        driver = AsyncpgDriver(connection)
+        yield QueueManager(driver)
 
 
 # Database Configuration
@@ -49,6 +64,9 @@ app = Litestar(
         DefineMiddleware(RequestIDMiddleware),
         DefineMiddleware(UserCheckMiddleware),
     ],
+    dependencies={
+        "queue_manager": Provide(provide_queue_manager)
+    },
     exception_handlers={Exception: internal_server_error_handler},
 )
 

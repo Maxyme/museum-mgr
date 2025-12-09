@@ -1,33 +1,38 @@
 from litestar import Controller, get, post
 from litestar.status_codes import HTTP_201_CREATED
-from litestar.datastructures import State
 from sqlalchemy.ext.asyncio import AsyncSession
+import json
+from typing import Any
 
 from orm import museum as museum_repo
 from api_models.museum import MuseumCreate, MuseumRead
-from clients.worker_client import WorkerClient
-from worker_app import log_museum_created
+# from pgqueuer.qm import QueueManager
+
 class MuseumController(Controller):
     path = "/museums"
 
     @post("/", status_code=HTTP_201_CREATED)
     async def create_museum(
-        self, data: MuseumCreate, db_session: AsyncSession, state: State
+        self, 
+        data: MuseumCreate, 
+        db_session: AsyncSession, 
+        queue_manager: Any
     ) -> MuseumRead:
         museum = await museum_repo.create_museum(db_session, data)
         
-        # Send task to worker using the client in state
-        worker_client: WorkerClient = state.worker_client
-        from asyncmq.queues import Queue
-        q = Queue("museums")
-        await log_museum_created.enqueue(museum.id, museum.city, backend=q.backend, delay=10)
-        # await worker_client.send_task(
-        #     queue_name="museum_tasks",
-        #     task_name="log_museum_created",
-        #     museum_id=str(museum.id),
-        #     city=museum.city
-        # )
-        #
+        # Send task to worker
+        payload = json.dumps({
+            "museum_id": str(museum.id),
+            "city": museum.city
+        }).encode()
+        
+        # queue_manager is Any, but we know it's QueueManager
+        # Correct arguments for enqueue: entrypoint, payload
+        await queue_manager.queries.enqueue(
+            entrypoint=["log_museum_created"],
+            payload=[payload]
+        )
+        
         return MuseumRead.model_validate(museum)
 
     @get("/")

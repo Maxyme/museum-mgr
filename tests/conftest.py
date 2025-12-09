@@ -1,4 +1,5 @@
 import pytest
+import asyncpg
 from litestar.testing import AsyncTestClient
 from sqlalchemy.ext.asyncio import async_sessionmaker, create_async_engine
 
@@ -6,6 +7,7 @@ from app import app, settings
 from clients.db_client import DBClient
 from orm.models.user import User
 from sqlalchemy import select
+from pgqueuer.queries import Queries
 
 @pytest.fixture(scope="session")
 def db_url():
@@ -25,6 +27,16 @@ async def setup_db(db_client: DBClient):
     """
     await db_client.clear_db()
     await db_client.create_all()
+
+    # Apply pgqueuer schema
+    db_url_clean = settings.DB_URL.replace("postgresql+asyncpg://", "postgresql://")
+    conn = await asyncpg.connect(db_url_clean)
+    try:
+        q = Queries.from_asyncpg_connection(conn)
+        await q.install()
+    finally:
+        await conn.close()
+
     await db_client.seed_db() # Seed the admin user here
 
 @pytest.fixture

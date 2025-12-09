@@ -1,5 +1,4 @@
 import pytest
-from api_models.museum import MuseumCreate
 from orm import museum as museum_repo
 from tests.factories import MuseumCreateFactory
 

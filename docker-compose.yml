@@ -13,7 +13,7 @@ services:
 
   api:
     build: .
-    entrypoint: ["litestar", "run", "--app", "api_app:app", "--host", "0.0.0.0", "--port", "8000"]
+    entrypoint: ["python", "-m", "litestar", "run", "--app", "app:app", "--host", "0.0.0.0", "--port", "8000"]
     ports:
       - "8000:8000"
     environment:
@@ -24,9 +24,7 @@ services:
 
   worker:
     build: .
-    # Initialize the broker schema then start the worker
-    # asyncmq might need explicit init, for now we run the app which creates broker
-    command: python worker_app.py
+    entrypoint: ["python", "worker_app.py"]
     environment:
       - DB_URL=postgresql+asyncpg://postgres:password@db:5432/museum_db
       - BROKER_URL=postgresql://postgres:password@db:5432/broker_db

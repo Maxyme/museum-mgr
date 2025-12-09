@@ -1,10 +1,9 @@
 from uuid import UUID
 
 from litestar import Controller, get, post, patch
-from litestar.status_codes import HTTP_201_CREATED, HTTP_404_NOT_FOUND
+from litestar.status_codes import HTTP_201_CREATED
 from litestar.exceptions import NotFoundException
 from sqlalchemy.ext.asyncio import AsyncSession
-from litestar.di import Provide
 
 from orm import user as user_repo
 from api_models.user import UserCreate, UserRead, UserUpdate
