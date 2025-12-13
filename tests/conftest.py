@@ -11,7 +11,7 @@ from pgqueuer.queries import Queries
 
 @pytest.fixture(scope="session")
 def db_url():
-    return settings.DB_URL
+    return settings.db_url
 
 @pytest.fixture(scope="session")
 async def db_client(db_url):

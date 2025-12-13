@@ -6,10 +6,11 @@ from litestar import Litestar
 from litestar.di import Provide
 from litestar.middleware import DefineMiddleware
 from litestar.middleware.logging import LoggingMiddlewareConfig
-from litestar.contrib.sqlalchemy.plugins import SQLAlchemyAsyncConfig, SQLAlchemyPlugin
+from litestar.plugins.sqlalchemy import SQLAlchemyAsyncConfig, SQLAlchemyPlugin
 from litestar.datastructures import State
 
 from clients.db_client import DBClient
+from clients.worker_client import WorkerClient
 from controllers.health import HealthController
 from controllers.museum import MuseumController
 from controllers.user import UserController
@@ -23,33 +24,25 @@ from pgqueuer.qm import QueueManager
 
 @asynccontextmanager
 async def lifespan(app: Litestar):
-    db_client = DBClient(db_url=settings.DB_URL)
+    db_client = DBClient(db_url=settings.db_url)
     app.state.db_client = db_client
-    
-    # Setup asyncpg pool for pgqueuer
-    pg_url = settings.DB_URL.replace("postgresql+asyncpg://", "postgresql://")
-    pool = await asyncpg.create_pool(pg_url)
-    app.state.pg_pool = pool
-
-    await db_client.wait_for_db(timeout=5)
-    
     yield
     
     # Teardown
     await db_client.close()
-    await pool.close()
 
-async def provide_queue_manager(state: State) -> QueueManager:
-    """Provides a QueueManager instance using a connection from the pool."""
+async def provide_worker_client(state: State) -> WorkerClient:
+    """Provides a WorkerClient instance."""
     pool: asyncpg.Pool = state.pg_pool
     async with pool.acquire() as connection:
         driver = AsyncpgDriver(connection)
-        yield QueueManager(driver)
+        qm = QueueManager(driver)
+        yield WorkerClient(queue_manager=qm)
 
 
 # Database Configuration
 db_config = SQLAlchemyAsyncConfig(
-    connection_string=settings.DB_URL,
+    connection_string=settings.db_url,
     create_all=False,  # managed by alembic
     before_send_handler="autocommit",
 )
@@ -65,14 +58,14 @@ app = Litestar(
         DefineMiddleware(UserCheckMiddleware),
     ],
     dependencies={
-        "queue_manager": Provide(provide_queue_manager)
+        "worker_client": Provide(provide_worker_client)
     },
     exception_handlers={Exception: internal_server_error_handler},
 )
 
 def start_app():
     """Start api with uvicorn."""
-    uvicorn.run(app, host="0.0.0.0", port=8000)
+    uvicorn.run(app, host=settings.API_HOST, port=settings.API_PORT)
 
 if __name__ == '__main__':
     start_app()

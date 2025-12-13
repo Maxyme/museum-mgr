@@ -31,6 +31,9 @@ build:
 run-docker population="10000":
     docker run -v {{justfile_directory()}}/cache:/app/cache museum-mgr {{population}}
 
+start-services:
+    docker compose up db -d
+
 create-migration MESSAGE:
     uv run alembic revision --autogenerate -m "{{MESSAGE}}"
 

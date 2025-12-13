@@ -11,6 +11,9 @@ ENV UV_PYTHON_INSTALL_DIR=/python
 # Install Python to specified directory
 RUN uv python install
 
+# Set the workdir (needs to be the same as the run workir for shebang lines ie. litestar to work directly)
+WORKDIR /app
+
 # Install dependencies
 RUN --mount=type=cache,target=/root/.cache/uv \
     --mount=type=bind,source=uv.lock,target=uv.lock \
@@ -34,7 +37,7 @@ RUN groupadd --system --gid 999 nonroot \
 COPY --from=builder --chown=nonroot:nonroot /python /python
 
 # Copy the .venv from the builder
-COPY --from=builder --chown=nonroot:nonroot .venv /app/.venv
+COPY --from=builder --chown=nonroot:nonroot /app/.venv /app/.venv
 
 # Place executables in the environment at the front of the path
 ENV PATH="/app/.venv/bin:$PATH"
@@ -44,5 +47,3 @@ USER nonroot
 
 # Copy the application from the builder
 COPY --chown=nonroot:nonroot . /app
-
-ENTRYPOINT ["python", "main.py"]

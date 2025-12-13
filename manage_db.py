@@ -56,7 +56,7 @@ async def main():
     args = parser.parse_args()
 
     # Manually create client
-    client = DBClient(db_url=settings.DB_URL)
+    client = DBClient(db_url=settings.db_url)
     
     try:
         if args.command == "clear":
@@ -70,7 +70,7 @@ async def main():
             await client.seed_db()
         elif args.command == "install-queue":
              # We can't use DBClient here directly as we need asyncpg connection
-             await install_pgqueuer_schema(settings.DB_URL)
+             await install_pgqueuer_schema(settings.db_url)
         elif args.command == "wait":
             logger.info("Waiting for database...")
             await client.wait_for_db()

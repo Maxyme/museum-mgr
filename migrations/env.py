@@ -32,7 +32,7 @@ target_metadata = Base.metadata
 
 from app import settings
 # Overwrite sqlalchemy.url with the one from settings
-config.set_main_option("sqlalchemy.url", settings.DB_URL)
+config.set_main_option("sqlalchemy.url", settings.db_url)
 
 
 def run_migrations_offline() -> None:
