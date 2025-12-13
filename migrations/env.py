@@ -21,7 +21,8 @@ if config.config_file_name is not None:
 # from myapp import mymodel
 # target_metadata = mymodel.Base.metadata
 from api_models.base import Base
-# advanced-alchemy models usually share a registry or base. 
+
+# advanced-alchemy models usually share a registry or base.
 # Museum is a class, let's get its metadata.
 target_metadata = Base.metadata
 
@@ -31,6 +32,7 @@ target_metadata = Base.metadata
 # ... etc.
 
 from app import settings
+
 # Overwrite sqlalchemy.url with the one from settings
 config.set_main_option("sqlalchemy.url", settings.db_url)
 

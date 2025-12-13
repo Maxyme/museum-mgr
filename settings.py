@@ -3,7 +3,9 @@ from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
 class Settings(BaseSettings):
-    model_config = SettingsConfigDict(env_file='.env', env_file_encoding='utf-8', extra='ignore')
+    model_config = SettingsConfigDict(
+        env_file=".env", env_file_encoding="utf-8", extra="ignore"
+    )
 
     POSTGRES_USER: str
     POSTGRES_PASSWORD: str
@@ -27,5 +29,6 @@ class Settings(BaseSettings):
     def broker_url(self) -> str:
         """Get the broker url. Note the protocol doesn't need to be included for PGQueuer."""
         return f"{self.db_type}://{self.POSTGRES_USER}:{self.POSTGRES_PASSWORD}@{self.DB_HOST}:{self.DB_PORT}/{self.BROKER_DB_NAME}"
+
 
 settings = Settings()

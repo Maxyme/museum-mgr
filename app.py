@@ -27,9 +27,10 @@ async def lifespan(app: Litestar):
     db_client = DBClient(db_url=settings.db_url)
     app.state.db_client = db_client
     yield
-    
+
     # Teardown
     await db_client.close()
+
 
 async def provide_worker_client(state: State) -> WorkerClient:
     """Provides a WorkerClient instance."""
@@ -57,15 +58,15 @@ app = Litestar(
         DefineMiddleware(RequestIDMiddleware),
         DefineMiddleware(UserCheckMiddleware),
     ],
-    dependencies={
-        "worker_client": Provide(provide_worker_client)
-    },
+    dependencies={"worker_client": Provide(provide_worker_client)},
     exception_handlers={Exception: internal_server_error_handler},
 )
+
 
 def start_app():
     """Start api with uvicorn."""
     uvicorn.run(app, host=settings.API_HOST, port=settings.API_PORT)
 
-if __name__ == '__main__':
+
+if __name__ == "__main__":
     start_app()

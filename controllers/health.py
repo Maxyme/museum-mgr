@@ -6,6 +6,7 @@ import asyncpg
 
 from clients.db_client import DBClient
 
+
 class HealthController(Controller):
     path = "/health"
 
@@ -17,10 +18,10 @@ class HealthController(Controller):
     async def ready(self, state: State) -> Response[dict[str, str]]:
         db_client: DBClient = state.db_client
         pool: asyncpg.Pool = state.pg_pool
-        
+
         try:
             is_db_migrated = await db_client.check_migrations()
-            
+
             # Check worker DB connection via pool
             is_worker_ready = False
             try:
@@ -32,7 +33,7 @@ class HealthController(Controller):
 
             if is_db_migrated and is_worker_ready:
                 return Response({"status": "ready"}, status_code=HTTP_200_OK)
-            
+
             details = []
             if not is_db_migrated:
                 details.append("Pending migrations")
@@ -41,10 +42,10 @@ class HealthController(Controller):
 
             return Response(
                 {"status": "not ready", "detail": "; ".join(details)},
-                status_code=HTTP_503_SERVICE_UNAVAILABLE
+                status_code=HTTP_503_SERVICE_UNAVAILABLE,
             )
         except Exception as e:
             return Response(
                 {"status": "error", "detail": str(e)},
-                status_code=HTTP_503_SERVICE_UNAVAILABLE
+                status_code=HTTP_503_SERVICE_UNAVAILABLE,
             )

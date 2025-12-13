@@ -9,15 +9,18 @@ from orm.models.user import User
 from sqlalchemy import select
 from pgqueuer.queries import Queries
 
+
 @pytest.fixture(scope="session")
 def db_url():
     return settings.db_url
+
 
 @pytest.fixture(scope="session")
 async def db_client(db_url):
     client = DBClient(db_url=db_url)
     yield client
     await client.close()
+
 
 @pytest.fixture(autouse=True)
 async def setup_db(db_client: DBClient):
@@ -37,15 +40,20 @@ async def setup_db(db_client: DBClient):
     finally:
         await conn.close()
 
-    await db_client.seed_db() # Seed the admin user here
+    await db_client.seed_db()  # Seed the admin user here
+
 
 @pytest.fixture
-async def admin_user_id(db_client: DBClient, setup_db): # Depend on setup_db to ensure it runs
+async def admin_user_id(
+    db_client: DBClient, setup_db
+):  # Depend on setup_db to ensure it runs
     # Query for the admin user seeded in setup_db
     # This requires a session. We'll reuse the db_client's engine and create a temporary session.
     async_session = async_sessionmaker(db_client.engine, expire_on_commit=False)
     async with async_session() as session:
-        result = await session.execute(select(User).where(User.email == "admin@museum.com"))
+        result = await session.execute(
+            select(User).where(User.email == "admin@museum.com")
+        )
         admin_user = result.scalars().first()
         assert admin_user is not None
         return str(admin_user.id)
@@ -62,6 +70,7 @@ async def db_session(db_url):
         yield session
     await engine.dispose()
 
+
 @pytest.fixture
 async def test_client():
     """
@@ -69,6 +78,7 @@ async def test_client():
     """
     async with AsyncTestClient(app=app) as client:
         yield client
+
 
 @pytest.fixture
 async def authenticated_test_client(test_client: AsyncTestClient, admin_user_id: str):

@@ -4,13 +4,16 @@ import json
 import asyncpg
 from pgqueuer.db import AsyncpgDriver
 from pgqueuer.models import Job
-from pgqueuer.qm import QueueManager
+from pgqueuer import PgQueuer
+
 from settings import settings
+from clients.db_client import DBClient
 
 logger = logging.getLogger(__name__)
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)
+
 
 async def log_museum_created(job: Job) -> None:
     try:
@@ -21,54 +24,33 @@ async def log_museum_created(job: Job) -> None:
     except Exception as e:
         logger.error(f"Error processing job: {e}")
 
-async def main2():
-    # Use settings.DB_URL but ensure it's compatible with asyncpg (remove +asyncpg if present)
-    db_url = settings.db_url# .replace("postgresql+asyncpg://", "postgresql://")
 
-    # Extract connection params or just pass DSN
-    # asyncpg.connect handles the DSN string well.
+async def main(db_manager: DBClient) -> PgQueuer:
+    # Wait for the DB to be ready
+    await db_manager.wait_for_db()
 
-    logger.info(f"Connecting to {db_url}")
-    connection = await asyncpg.connect(db_url)
-    driver = AsyncpgDriver(connection)
-    qm = QueueManager(driver)
-
-    # Register entrypoints
-    # We map the entrypoint name (string) to the function
-    qm.entrypoint("log_museum_created")(log_museum_created)
-
-    logger.info("Starting worker...")
-    try:
-        await qm.run()
-    finally:
-        await connection.close()
-
-
-
-
-from datetime import datetime
-
-import asyncpg
-from pgqueuer import PgQueuer
-from pgqueuer.db import AsyncpgDriver
-from pgqueuer.models import Job, Schedule
-from pgqueuer.__main__ import main
-
-async def main() -> PgQueuer:
-    db_url = settings.BROKER_URL
+    # Connect to the broker database
+    db_url = settings.broker_url
     conn = await asyncpg.connect(db_url)
     driver = AsyncpgDriver(conn)
     pgq = PgQueuer(driver)
 
-    @pgq.entrypoint("fetch")
-    async def process(job: Job) -> None:
-        print(f"Processed: {job!r}")
-
-    @pgq.schedule("every_minute", "* * * * *")
-    async def every_minute(schedule: Schedule) -> None:
-        print(f"Ran at {datetime.now():%H:%M:%S}")
+    # Register the entrypoint
+    pgq.entrypoint("log_museum_created")(log_museum_created)
 
     return pgq
 
+
 if __name__ == "__main__":
-    asyncio.run(main())
+
+    async def run():
+        # We use the Museum DB URL for the DB manager to check connectivity.
+        db_manager = DBClient(db_url=settings.db_url)
+        try:
+            pgq = await main(db_manager)
+            # await pgq.upgrade()
+            await pgq.run()
+        finally:
+            await db_manager.close()
+
+    asyncio.run(run())

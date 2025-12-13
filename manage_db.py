@@ -12,10 +12,11 @@ from clients.db_client import DBClient
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger("manage_db")
 
+
 async def install_pgqueuer_schema(db_url: str):
     # Strip +asyncpg if present
     db_url = db_url.replace("postgresql+asyncpg://", "postgresql://")
-    
+
     logger.info(f"Installing pgqueuer schema to {db_url}")
     conn = await asyncpg.connect(db_url)
     try:
@@ -27,12 +28,13 @@ async def install_pgqueuer_schema(db_url: str):
     except Exception as e:
         # Check if error message indicates existence (sometimes asyncpg wraps it differently?)
         if "already exists" in str(e):
-             logger.info(f"PgQueuer schema seems to exist ({e}). Skipping.")
+            logger.info(f"PgQueuer schema seems to exist ({e}). Skipping.")
         else:
             logger.error(f"Failed to install schema: {e}")
             raise
     finally:
         await conn.close()
+
 
 async def main():
     parser = argparse.ArgumentParser(description="Database management script")
@@ -57,7 +59,7 @@ async def main():
 
     # Manually create client
     client = DBClient(db_url=settings.db_url)
-    
+
     try:
         if args.command == "clear":
             logger.info("Clearing database...")
@@ -69,8 +71,8 @@ async def main():
             logger.info("Seeding database...")
             await client.seed_db()
         elif args.command == "install-queue":
-             # We can't use DBClient here directly as we need asyncpg connection
-             await install_pgqueuer_schema(settings.db_url)
+            # We can't use DBClient here directly as we need asyncpg connection
+            await install_pgqueuer_schema(settings.db_url)
         elif args.command == "wait":
             logger.info("Waiting for database...")
             await client.wait_for_db()
@@ -81,7 +83,8 @@ async def main():
         logger.error(f"Error executing {args.command}: {e}")
         sys.exit(1)
     finally:
-        await client.close() # Close the client's engine
+        await client.close()  # Close the client's engine
+
 
 if __name__ == "__main__":
     asyncio.run(main())

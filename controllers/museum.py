@@ -7,21 +7,19 @@ from orm import museum as museum_repo
 from api_models.museum import MuseumCreate, MuseumRead
 from clients.worker_client import WorkerClient
 
+
 class MuseumController(Controller):
     path = "/museums"
 
     @post("/", status_code=HTTP_201_CREATED)
     async def create_museum(
-        self, 
-        data: MuseumCreate, 
-        db_session: AsyncSession, 
-        worker_client: WorkerClient
+        self, data: MuseumCreate, db_session: AsyncSession, worker_client: WorkerClient
     ) -> MuseumRead:
         museum = await museum_repo.create_museum(db_session, data)
-        
+
         # Send task to worker
         await worker_client.log_museum_created(str(museum.id), museum.city)
-        
+
         return MuseumRead.model_validate(museum)
 
     @get("/")

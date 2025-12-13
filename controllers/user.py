@@ -9,14 +9,13 @@ from orm import user as user_repo
 from api_models.user import UserCreate, UserRead, UserUpdate
 from guards import admin_guard
 
+
 class UserController(Controller):
     path = "/users"
     guards = [admin_guard]
 
     @post("/", status_code=HTTP_201_CREATED)
-    async def create_user(
-        self, data: UserCreate, db_session: AsyncSession
-    ) -> UserRead:
+    async def create_user(self, data: UserCreate, db_session: AsyncSession) -> UserRead:
         user = await user_repo.create_user(db_session, data)
         return UserRead.model_validate(user)
 
