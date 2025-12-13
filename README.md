@@ -49,3 +49,6 @@ The notebook includes:
 - Balance the need for quickly assessing the data, rapid prototyping and deploying a MVP to a (potentially) public user that could later scale.
 - Use the Wikipedia APIs to retrieve this list of museums and their characteristics.
 - Choose the source of your choice for the population of the cities concerned.
+
+# Todo:
+- Investigate using (psqlpy)[https://github.com/psqlpy-python/psqlpy]  instead of asyncpg as sql driver (faster).
