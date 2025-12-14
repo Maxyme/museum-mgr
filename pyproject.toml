@@ -30,6 +30,11 @@ dependencies = [
 [tool.uv]
 python-preference = "managed"
 
+[tool.uv.workspace]
+members = [
+    "data_science",
+]
+
 [dependency-groups]
 dev = [
     "pytest>=8.3.4",

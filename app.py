@@ -28,13 +28,13 @@ async def lifespan(app: Litestar):
     app.state.db_client = db_client
 
     # Create connection pool for the broker database
-    # pool = await asyncpg.create_pool(settings.broker_url)
-    # app.state.pg_pool = pool
+    pool = await asyncpg.create_pool(settings.broker_url)
+    app.state.pg_pool = pool
 
     yield
 
     # Teardown
-    # await pool.close()
+    await pool.close()
     await db_client.close()
 
 

@@ -22,6 +22,12 @@ if config.config_file_name is not None:
 # target_metadata = mymodel.Base.metadata
 from api_models.base import Base
 
+# Import models to register them with metadata
+import orm.models.city
+import orm.models.visitor_prediction
+import orm.models.museum
+import orm.models.user
+
 # advanced-alchemy models usually share a registry or base.
 # Museum is a class, let's get its metadata.
 target_metadata = Base.metadata

@@ -2,6 +2,12 @@ version = 1
 revision = 3
 requires-python = ">=3.13, <4.0"
 
+[manifest]
+members = [
+    "data-science",
+    "museum-mgr",
+]
+
 [[package]]
 name = "advanced-alchemy"
 version = "1.8.1"
@@ -161,6 +167,11 @@ sdist = { url = "https://files.pythonhosted.org/packages/ad/2f/44d1ae153a0e27be5
 wheels = [
     { url = "https://files.pythonhosted.org/packages/07/4b/290b4c3efd6417a8b0c284896de19b1d5855e6dbdb97d2a35e68fa42de85/croniter-6.0.0-py2.py3-none-any.whl", hash = "sha256:2f878c3856f17896979b2a4379ba1f09c83e374931ea15cc835c5dd2eee9b368", size = 25468, upload-time = "2024-12-17T17:17:45.359Z" },
 ]
+
+[[package]]
+name = "data-science"
+version = "0.1.0"
+source = { virtual = "data_science" }
 
 [[package]]
 name = "editorconfig"

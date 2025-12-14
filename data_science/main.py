@@ -5,10 +5,10 @@ from onnxruntime import InferenceSession
 from peewee import SqliteDatabase
 
 from constants import MUSEUMS_URL
-from data_fetcher import get_museum_visitors
+from data_science.data_science import get_museum_visitors
 from db import create_and_populate_db
 import polars as pl
-from onnx_train_predict import train_model, predict
+from data_science.onnx_train_predict import train_model, predict
 
 cache_path = Path(__file__).parent / "cache"
 cache_path.mkdir(exist_ok=True)

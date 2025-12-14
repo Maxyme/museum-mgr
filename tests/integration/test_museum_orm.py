@@ -10,7 +10,7 @@ async def test_create_museum(db_session):
     await db_session.commit()
 
     assert museum.id is not None
-    assert museum.city == "Paris"
+    assert museum.city.name == "Paris"
     assert museum.population == 2161000
 
 
@@ -25,6 +25,6 @@ async def test_list_museums(db_session):
 
     museums = await museum_repo.list_museums(db_session)
     assert len(museums) == 2
-    cities = {m.city for m in museums}
+    cities = {m.city.name for m in museums}
     assert "Paris" in cities
     assert "London" in cities

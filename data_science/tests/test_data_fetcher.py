@@ -1,6 +1,6 @@
 """Data fetcher tests."""
 
-from data_fetcher import _parse_number_with_string_multiplier
+from data_science.data_science import _parse_number_with_string_multiplier
 
 
 def test_parse_number_with_string_multiplier():

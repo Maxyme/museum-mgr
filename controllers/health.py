@@ -22,11 +22,14 @@ class HealthController(Controller):
         try:
             is_db_migrated = await db_client.check_migrations()
 
-            # Check worker DB connection via pool
+            # Check worker DB connection and schema existence
             is_worker_ready = False
             try:
                 async with pool.acquire() as conn:
-                    await conn.execute("SELECT 1")
+                    # Check connection and if pgqueuer table exists
+                    # This implies schema is installed and queue is ready
+                    # Todo, worker client should have api check for live instead
+                    await conn.execute("SELECT 1 FROM pgqueuer LIMIT 1")
                 is_worker_ready = True
             except Exception:
                 is_worker_ready = False
@@ -38,7 +41,9 @@ class HealthController(Controller):
             if not is_db_migrated:
                 details.append("Pending migrations")
             if not is_worker_ready:
-                details.append("Worker DB connection failed")
+                details.append(
+                    "Worker queue not ready (DB connection failed or schema missing)"
+                )
 
             return Response(
                 {"status": "not ready", "detail": "; ".join(details)},

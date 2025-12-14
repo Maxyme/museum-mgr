@@ -18,7 +18,8 @@ class MuseumController(Controller):
         museum = await museum_repo.create_museum(db_session, data)
 
         # Send task to worker
-        await worker_client.log_museum_created(str(museum.id), museum.city)
+        # museum.city is a City object, we need to pass the name string
+        await worker_client.log_museum_created(str(museum.id), museum.city.name)
 
         return MuseumRead.model_validate(museum)
 

@@ -6,13 +6,14 @@ from settings import settings
 from worker_app import main as worker_main
 from clients.db_client import DBClient
 
+
 @pytest.mark.integration
 @pytest.mark.asyncio
 async def test_museum_creation_triggers_worker(authenticated_test_client):
     # Start the worker
     db_manager = DBClient(db_url=settings.db_url)
     pgq = await worker_main(db_manager)
-    
+
     # Run worker in background
     worker_task = asyncio.create_task(pgq.run())
 
@@ -22,16 +23,16 @@ async def test_museum_creation_triggers_worker(authenticated_test_client):
             "/museums", json={"city": "Integration City", "population": 100000}
         )
         assert response.status_code == HTTP_201_CREATED
-        
+
         # 2. Wait for job to be processed
         # We poll the pgqueuer_log table in broker_db (since pgqueuer table might be cleared)
         broker_conn = await asyncpg.connect(settings.broker_url)
         try:
             # Wait up to 5 seconds for the job to be marked as successful
-            for _ in range(10): 
+            for _ in range(10):
                 row = await broker_conn.fetchrow(
                     "SELECT status FROM pgqueuer_log WHERE entrypoint = $1 AND status = 'successful' ORDER BY id DESC LIMIT 1",
-                    "log_museum_created"
+                    "log_museum_created",
                 )
                 if row:
                     break
@@ -41,7 +42,9 @@ async def test_museum_creation_triggers_worker(authenticated_test_client):
                 row = await broker_conn.fetchrow(
                     "SELECT * FROM pgqueuer_log ORDER BY id DESC LIMIT 1"
                 )
-                pytest.fail(f"Worker did not process the job in time. Last log entry: {row}")
+                pytest.fail(
+                    f"Worker did not process the job in time. Last log entry: {row}"
+                )
         finally:
             await broker_conn.close()
 
@@ -56,5 +59,5 @@ async def test_museum_creation_triggers_worker(authenticated_test_client):
                 await worker_task
             except asyncio.CancelledError:
                 pass
-        
+
         await db_manager.close()

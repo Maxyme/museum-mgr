@@ -1,6 +1,7 @@
 from uuid import UUID
+from typing import Any
 
-from pydantic import BaseModel
+from pydantic import BaseModel, field_validator
 
 
 # Pydantic Models
@@ -14,3 +15,10 @@ class MuseumRead(BaseModel):
     id: UUID
     city: str
     population: int
+
+    @field_validator("city", mode="before")
+    @classmethod
+    def extract_city_name(cls, v: Any) -> str:
+        if hasattr(v, "name"):
+            return v.name
+        return str(v)
