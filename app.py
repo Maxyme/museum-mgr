@@ -6,7 +6,7 @@ from litestar import Litestar
 from litestar.di import Provide
 from litestar.middleware import DefineMiddleware
 from litestar.middleware.logging import LoggingMiddlewareConfig
-from litestar.plugins.sqlalchemy import SQLAlchemyAsyncConfig, SQLAlchemyPlugin
+from advanced_alchemy.extensions.litestar import SQLAlchemyAsyncConfig, SQLAlchemyPlugin
 from litestar.datastructures import State
 
 from clients.db_client import DBClient
@@ -26,9 +26,15 @@ from pgqueuer.qm import QueueManager
 async def lifespan(app: Litestar):
     db_client = DBClient(db_url=settings.db_url)
     app.state.db_client = db_client
+
+    # Create connection pool for the broker database
+    # pool = await asyncpg.create_pool(settings.broker_url)
+    # app.state.pg_pool = pool
+
     yield
 
     # Teardown
+    # await pool.close()
     await db_client.close()
 
 

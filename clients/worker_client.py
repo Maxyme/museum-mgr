@@ -1,11 +1,10 @@
 import json
-from dataclasses import dataclass
 from pgqueuer.qm import QueueManager
 
 
-@dataclass
 class WorkerClient:
-    queue_manager: QueueManager
+    def __init__(self, queue_manager: QueueManager):
+        self.queue_manager = queue_manager
 
     async def enqueue_job(self, entrypoint: str, payload: dict) -> None:
         encoded_payload = json.dumps(payload).encode()

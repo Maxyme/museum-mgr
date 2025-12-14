@@ -31,11 +31,14 @@ async def setup_db(db_client: DBClient):
     await db_client.clear_db()
     await db_client.create_all()
 
-    # Apply pgqueuer schema
-    db_url_clean = settings.DB_URL.replace("postgresql+asyncpg://", "postgresql://")
-    conn = await asyncpg.connect(db_url_clean)
+    # Apply pgqueuer schema to broker db
+    conn = await asyncpg.connect(settings.broker_url)
     try:
         q = Queries.from_asyncpg_connection(conn)
+        try:
+            await q.uninstall()
+        except Exception:
+            pass
         await q.install()
     finally:
         await conn.close()
