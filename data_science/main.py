@@ -1,60 +1,64 @@
-import argparse
-import json
+import asyncio
 from pathlib import Path
-from onnxruntime import InferenceSession
-from peewee import SqliteDatabase
-
-from constants import MUSEUMS_URL
-from data_science.data_science import get_museum_visitors
-from db import create_and_populate_db
 import polars as pl
-from data_science.onnx_train_predict import train_model, predict
 
-cache_path = Path(__file__).parent / "cache"
-cache_path.mkdir(exist_ok=True)
-museum_data_path = cache_path / "museum_data.json"
-db_path = cache_path / "local.db"
-sklearn_model_path = cache_path / "linear_regression_model.joblib"
-onnx_model_path = cache_path / "model.onnx"
+from sqlalchemy.ext.asyncio import async_sessionmaker
+
+from clients.db_client import DBClient
+from data_science.data_fetcher import get_museum_visitors
+from data_science.constants import MUSEUMS_URL
+from data_science.onnx_train_predict import train_model
+from settings import settings
+from orm.city import get_or_create_city
+from orm.museum import create_museum
+from api_models.museum import MuseumCreate
 
 
-def main(population: int):
-    # Check if the file already exists
-    if not museum_data_path.exists():
-        museum_data = get_museum_visitors(MUSEUMS_URL)
-
-        # Dump to a json to file (as a cache)
-        with museum_data_path.open("w") as handler:
-            json.dump(museum_data, handler, indent=4)
-
-    # Save into db if it doesn't exist
-    db = SqliteDatabase(db_path)
-    if not db_path.exists():
-        create_and_populate_db(museum_data_path, db)
-
-    # Check if the model exists
-    if not onnx_model_path.exists():
-        # Read the db to set the population and visitors data in a DataFrame
-        # Filter outliers ("Vatican City Rome"...)
-        df = pl.read_database(
-            query="SELECT City.population, City.avg_museum_visitors_per_year FROM City WHERE City.population > 200_000",
-            connection=db,
+def build_ml_model(data: list, model_path: Path):
+    rows = []
+    for c in data:
+        rows.append(
+            {"population": c.population, "avg_museum_visitors_per_year": c.visitors}
         )
-        session = train_model(df, sklearn_model_path, onnx_model_path)
-    else:
-        session = InferenceSession(onnx_model_path)
 
-    # Use the model to predict visitors per year
-    predicted_visitors = predict(session, population)
-    print(f"predicted visitors per year: {predicted_visitors}")
+    df = pl.DataFrame(rows)
+    df = df.filter(pl.col("population") > 200_000)
+
+    sklearn_path = model_path.with_suffix(".joblib")
+    train_model(df, sklearn_path, model_path)
+
+
+async def save_in_db(session, cities):
+    """Save cities and museums in db."""
+    async with session.begin():
+        for city_data in cities:
+            # Ensure city exists
+            await get_or_create_city(session, city_data.name, city_data.population)
+
+            # Create Museums
+            for _ in city_data.museums:
+                museum_data = MuseumCreate(
+                    city=city_data.name, population=city_data.population
+                )
+                await create_museum(session, museum_data)
+
+
+async def main():
+    """Run full script to get onnx model."""
+    cities = get_museum_visitors(MUSEUMS_URL)
+    db_client = DBClient(settings.db_url)
+    await db_client.wait_for_db()
+
+    session_maker = async_sessionmaker(db_client.engine, expire_on_commit=False)
+    async with session_maker() as session:
+        await save_in_db(session, cities)
+
+    model_path = Path("cache/model.onnx")
+    model_path.parent.mkdir(exist_ok=True)
+    build_ml_model(cities, model_path)
+
+    await db_client.close()
 
 
 if __name__ == "__main__":
-    parser = argparse.ArgumentParser(
-        description="Predict museum visitors per year based on city population"
-    )
-    parser.add_argument(
-        "input", type=int, help="Population of the city to predict for."
-    )
-    args = parser.parse_args()
-    main(args.input)
+    asyncio.run(main())

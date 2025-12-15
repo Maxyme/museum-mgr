@@ -12,7 +12,7 @@ from skl2onnx import convert_sklearn
 
 from skl2onnx.common.data_types import Int64TensorType
 
-from data_science import get_linear_regression_model
+from .ml_models import get_linear_regression_model
 
 
 def train_model(

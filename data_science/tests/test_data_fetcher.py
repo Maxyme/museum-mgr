@@ -1,10 +1,10 @@
 """Data fetcher tests."""
 
-from data_science.data_science import _parse_number_with_string_multiplier
+from ..data_fetcher import _parse_number_with_string_multiplier
 
 
 def test_parse_number_with_string_multiplier():
-    """Test parsing numbers with special chars ans string multipliers."""
+    """Test parsing numbers with special chars and string multipliers."""
     numb_response = [
         ("1234 [1]", 1234),
         ("1234 (approx)", 1234),

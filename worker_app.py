@@ -27,13 +27,20 @@ logger = logging.getLogger(__name__)
 # Configure logging
 logging.basicConfig(level=logging.INFO)
 
+db_client = DBClient(settings.db_url)
 
-async def upgrade_pgqueuer_schema(db_url: str):
-    # Strip +asyncpg if present
-    db_url_clean = db_url.replace("postgresql+asyncpg://", "postgresql://")
+# Strip +asyncpg if present
+# db_url_clean = settings.broker_url.replace("postgresql+asyncpg://", "postgresql://")
 
-    logger.info(f"Upgrading pgqueuer schema to {db_url_clean}")
-    conn = await asyncpg.connect(db_url_clean)
+broker_client_url = settings.broker_url.replace(
+    "postgresql+asyncpg://", "postgresql://"
+)
+
+
+async def upgrade_pgqueuer_schema(url: str):
+    """Upgrade broker db schema"""
+    logger.info(f"Upgrading pgqueuer schema to {url}")
+    conn = await asyncpg.connect(url)
     try:
         queries = Queries.from_asyncpg_connection(conn)
 
@@ -62,12 +69,13 @@ async def upgrade_pgqueuer_schema(db_url: str):
         await conn.close()
 
 
-async def main(db_manager: DBClient) -> PgQueuer:
+async def main() -> PgQueuer:
     # Wait for the DB to be ready
-    await db_manager.wait_for_db()
+    await db_client.wait_for_db()
 
     # Install/upgrade pgqueuer schema
-    await upgrade_pgqueuer_schema(settings.broker_url)
+    # Wait for db
+    await upgrade_pgqueuer_schema(broker_client_url)
 
     # Load ONNX model
     model_path = Path("cache/model.onnx")
@@ -82,13 +90,13 @@ async def main(db_manager: DBClient) -> PgQueuer:
             logger.error(f"Failed to load ONNX model: {e}")
 
     # Connect to the broker database
-    db_url = settings.broker_url
+    db_url = broker_client_url
     conn = await asyncpg.connect(db_url)
     driver = AsyncpgDriver(conn)
     pgq = PgQueuer(driver)
 
     # Session factory for Museum DB
-    async_session = async_sessionmaker(db_manager.engine, expire_on_commit=False)
+    async_session = async_sessionmaker(db_client.engine, expire_on_commit=False)
 
     async def log_museum_created(job: Job) -> None:
         try:
@@ -127,7 +135,7 @@ async def main(db_manager: DBClient) -> PgQueuer:
                     # Input name 'population' matches training script
                     x_input = np.array([[population]], dtype=np.int64)
                     output = session.run(None, {"population": x_input})
-                    predicted_visitors = math.floor(float(output[0][0][0]))
+                    predicted_visitors = max(0, math.floor(float(output[0][0][0])))
 
                     logger.info(
                         f"Prediction for {city_name} (pop: {population}): {predicted_visitors}"
@@ -166,7 +174,6 @@ if __name__ == "__main__":
 
     async def run():
         # We use the Museum DB URL for the DB manager to check connectivity.
-        db_manager = DBClient(db_url=settings.db_url)
         pgq_ref = {}
 
         loop = asyncio.get_running_loop()
@@ -184,13 +191,13 @@ if __name__ == "__main__":
             loop.add_signal_handler(sig, signal_handler)
 
         try:
-            pgq = await main(db_manager)
+            pgq = await main()  # No args needed, injected
             pgq_ref["instance"] = pgq
             await pgq.run()
         except asyncio.CancelledError:
             logger.info("Worker cancelled.")
         finally:
-            await db_manager.close()
+            await db_client.close()
             logger.info("Worker shutdown complete.")
 
     asyncio.run(run())

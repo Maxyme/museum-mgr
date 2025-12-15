@@ -7,18 +7,12 @@ from sqlalchemy.orm import joinedload
 
 from api_models.museum import MuseumCreate
 from orm.models.museum import Museum
-from orm.models.city import City
+from orm.city import get_or_create_city
 
 
 async def create_museum(session: AsyncSession, data: MuseumCreate) -> Museum:
     # Check/Create City
-    result = await session.execute(select(City).where(City.name == data.city))
-    city = result.scalars().first()
-
-    if not city:
-        city = City(name=data.city, population=data.population)
-        session.add(city)
-        await session.flush()
+    city = await get_or_create_city(session, data.city, data.population)
 
     museum = Museum(city_id=city.id, population=data.population)
     session.add(museum)
@@ -26,8 +20,6 @@ async def create_museum(session: AsyncSession, data: MuseumCreate) -> Museum:
     await session.refresh(museum)
 
     # Manually assign relationship for return (avoid extra DB hit if refresh doesn't do it)
-    # But refresh doesn't load relationships unless requested.
-    # We can set it directly since we have the object.
     museum.city = city
 
     return museum

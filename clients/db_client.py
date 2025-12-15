@@ -13,6 +13,25 @@ from orm.models.user import User
 logger = logging.getLogger(__name__)
 
 
+async def wait_for_db(engine, timeout: int = 5) -> None:
+    start_time = asyncio.get_running_loop().time()
+
+    # logger.info("Waiting for database...") # Reduced logging noise for decorator use
+    while True:
+        try:
+            async with engine.connect() as conn:
+                await conn.execute(text("SELECT 1"))
+            # logger.info("Database is ready.")
+            break
+        except Exception as e:
+            current_time = asyncio.get_running_loop().time()
+            if current_time - start_time > timeout:
+                logger.error(f"Database wait timeout after {timeout}s: {e}")
+                raise TimeoutError(f"Database unavailable after {timeout}s") from e
+
+            await asyncio.sleep(0.5)
+
+
 def ensure_db_ready(func):
     """
     Decorator to ensure the database is ready before executing the method.
@@ -22,7 +41,7 @@ def ensure_db_ready(func):
     @wraps(func)
     async def wrapper(self, *args, **kwargs):
         # Avoid infinite recursion if ensuring ready on wait_for_db itself (not needed there)
-        await self.wait_for_db()
+        await self.wait_for_db(self.engine, self.wait_timeout)
         return await func(self, *args, **kwargs)
 
     return wrapper
@@ -32,6 +51,7 @@ def ensure_db_ready(func):
 class DBClient:
     db_url: str
     engine: AsyncEngine = field(init=False)
+    wait_timeout: int = 5
 
     def __post_init__(self):
         self.engine = create_async_engine(self.db_url)
@@ -41,24 +61,6 @@ class DBClient:
         if self.engine:
             await self.engine.dispose()
             logger.info("DBClient engine disposed.")
-
-    async def wait_for_db(self, timeout: int = 5) -> None:
-        start_time = asyncio.get_running_loop().time()
-
-        # logger.info("Waiting for database...") # Reduced logging noise for decorator use
-        while True:
-            try:
-                async with self.engine.connect() as conn:
-                    await conn.execute(text("SELECT 1"))
-                # logger.info("Database is ready.")
-                break
-            except Exception as e:
-                current_time = asyncio.get_running_loop().time()
-                if current_time - start_time > timeout:
-                    logger.error(f"Database wait timeout after {timeout}s: {e}")
-                    raise TimeoutError(f"Database unavailable after {timeout}s") from e
-
-                await asyncio.sleep(0.5)
 
     @ensure_db_ready
     async def clear_db(self) -> None:

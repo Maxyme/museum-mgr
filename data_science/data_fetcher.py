@@ -6,14 +6,13 @@ from bs4 import BeautifulSoup
 import re
 from multiprocessing import Pool
 
+from data_science.constants import UNITS
+from data_science.models import CityData, MuseumData
+
 # Add Regex to remove parentheses and brackets and anything inside
-NUMBER_REGEX = re.compile(r"\(.*?\)|\[.*?\]")
+NUMBER_REGEX = re.compile(r"\(.*?\)|\[.*?]")
 
 headers = {"User-Agent": "Mozilla/5.0"}
-
-UNITS = {
-    "million": 1_000_000,
-}
 
 
 def _parse_number_with_string_multiplier(text: str) -> int:
@@ -47,7 +46,7 @@ def _make_httpx_request(url: str) -> httpx.Response:
     return response
 
 
-def get_museum_visitors(museums_url: str) -> dict:
+def get_museum_visitors(museums_url: str) -> list[CityData]:
     """Scrapes the Wikipedia page for the list of most-visited museums."""
 
     with httpx.Client() as client:
@@ -75,7 +74,7 @@ def get_museum_visitors(museums_url: str) -> dict:
         museums_data[city_href].append(museum_data)
 
     # todo: run loop in async tasks this for better performance
-    pop_visitors = defaultdict(dict)
+    cities_data = []
     urls = []
     for city_href, values in museums_data.items():
         # Fetch wikimedia entity for the city
@@ -108,11 +107,17 @@ def get_museum_visitors(museums_url: str) -> dict:
         total_visitors = sum(museum_data["visitors_per_year"] for museum_data in values)
         avg_per_museum = math.floor(total_visitors / len(values))
 
-        pop_visitors[city_href]["population"] = avg_population
-        pop_visitors[city_href]["visitors"] = avg_per_museum
+        museums_list = [
+            MuseumData(museum=m["museum"], visitors_per_year=m["visitors_per_year"])
+            for m in values
+        ]
 
-    return pop_visitors
+        city_data = CityData(
+            name=city_href,
+            population=avg_population,
+            visitors=avg_per_museum,
+            museums=museums_list,
+        )
+        cities_data.append(city_data)
 
-
-if __name__ == "__main__":
-    data = get_museum_visitors()
+    return cities_data
