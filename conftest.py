@@ -32,7 +32,8 @@ async def setup_db(db_client: DBClient):
     await db_client.create_all()
 
     # Apply pgqueuer schema to broker db
-    conn = await asyncpg.connect(settings.broker_url)
+    broker_url = settings.broker_url.replace("+asyncpg", "")
+    conn = await asyncpg.connect(broker_url)
     try:
         q = Queries.from_asyncpg_connection(conn)
         try:

@@ -8,6 +8,7 @@ from litestar.middleware import DefineMiddleware
 from litestar.middleware.logging import LoggingMiddlewareConfig
 from advanced_alchemy.extensions.litestar import SQLAlchemyAsyncConfig, SQLAlchemyPlugin
 from litestar.datastructures import State
+from litestar.exceptions import NotFoundException
 
 from clients.db_client import DBClient
 from clients.worker_client import WorkerClient
@@ -16,7 +17,10 @@ from controllers.museum import MuseumController
 from controllers.user import UserController
 from middleware.request_id_middleware import RequestIDMiddleware
 from middleware.user_check_middleware import UserCheckMiddleware
-from exception_handlers import internal_server_error_handler
+from exception_handlers import (
+    internal_server_error_handler,
+    not_found_error_handler,
+)
 from settings import settings
 from pgqueuer.db import AsyncpgDriver
 from pgqueuer.qm import QueueManager
@@ -28,7 +32,8 @@ async def lifespan(app: Litestar):
     app.state.db_client = db_client
 
     # Create connection pool for the broker database
-    pool = await asyncpg.create_pool(settings.broker_url)
+    broker_url = settings.broker_url.replace("+asyncpg", "")
+    pool = await asyncpg.create_pool(broker_url)
     app.state.pg_pool = pool
 
     yield
@@ -65,7 +70,10 @@ app = Litestar(
         DefineMiddleware(UserCheckMiddleware),
     ],
     dependencies={"worker_client": Provide(provide_worker_client)},
-    exception_handlers={Exception: internal_server_error_handler},
+    exception_handlers={
+        Exception: internal_server_error_handler,
+        NotFoundException: not_found_error_handler,
+    },
 )
 
 
