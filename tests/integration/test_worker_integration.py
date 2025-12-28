@@ -26,7 +26,8 @@ async def test_museum_creation_triggers_worker(authenticated_test_client):
 
         # 2. Wait for job to be processed
         # We poll the pgqueuer_log table in broker_db (since pgqueuer table might be cleared)
-        broker_conn = await asyncpg.connect(settings.broker_url)
+        broker_url = settings.broker_url.replace("+asyncpg", "")
+        broker_conn = await asyncpg.connect(broker_url)
         try:
             # Wait up to 5 seconds for the job to be marked as successful
             for _ in range(10):

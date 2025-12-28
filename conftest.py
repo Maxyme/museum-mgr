@@ -34,17 +34,20 @@ async def setup_db(db_client: DBClient):
     # Apply pgqueuer schema to broker db
     broker_url = settings.broker_url.replace("+asyncpg", "")
     conn = await asyncpg.connect(broker_url)
+    q = Queries.from_asyncpg_connection(conn)
+    
     try:
-        q = Queries.from_asyncpg_connection(conn)
-        try:
-            await q.uninstall()
-        except Exception:
-            pass
         await q.install()
-    finally:
-        await conn.close()
+    except asyncpg.exceptions.DuplicateObjectError:
+        pass
 
     await db_client.seed_db()  # Seed the admin user here
+
+    yield
+
+    # Teardown
+    await q.uninstall()
+    await conn.close()
 
 
 @pytest.fixture

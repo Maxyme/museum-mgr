@@ -27,12 +27,10 @@ logger = logging.getLogger(__name__)
 # Configure logging
 logging.basicConfig(level=logging.INFO)
 
-db_client = DBClient(settings.db_url)
+_default_db_client = DBClient(settings.db_url)
 
 # Strip +asyncpg if present
-# db_url_clean = settings.broker_url.replace("postgresql+asyncpg://", "postgresql://")
-
-broker_client_url = settings.broker_url.replace(
+_default_broker_url = settings.broker_url.replace(
     "postgresql+asyncpg://", "postgresql://"
 )
 
@@ -69,13 +67,16 @@ async def upgrade_pgqueuer_schema(url: str):
         await conn.close()
 
 
-async def main() -> PgQueuer:
+async def main(
+    db_client: DBClient = _default_db_client,
+    broker_url: str = _default_broker_url,
+) -> PgQueuer:
     # Wait for the DB to be ready
     await db_client.wait_for_db()
 
     # Install/upgrade pgqueuer schema
     # Wait for db
-    await upgrade_pgqueuer_schema(broker_client_url)
+    await upgrade_pgqueuer_schema(broker_url)
 
     # Load ONNX model
     model_path = Path("cache/model.onnx")
@@ -90,14 +91,14 @@ async def main() -> PgQueuer:
             logger.error(f"Failed to load ONNX model: {e}")
 
     # Connect to the broker database
-    db_url = broker_client_url
-    conn = await asyncpg.connect(db_url)
+    conn = await asyncpg.connect(broker_url)
     driver = AsyncpgDriver(conn)
     pgq = PgQueuer(driver)
 
     # Session factory for Museum DB
     async_session = async_sessionmaker(db_client.engine, expire_on_commit=False)
 
+    @pgq.entrypoint("log_museum_created")
     async def log_museum_created(job: Job) -> None:
         try:
             data = json.loads(job.payload.decode())
@@ -164,9 +165,6 @@ async def main() -> PgQueuer:
         except Exception as e:
             logger.error(f"Error processing job: {e}")
 
-    # Register the entrypoint
-    pgq.entrypoint("log_museum_created")(log_museum_created)
-
     return pgq
 
 
@@ -197,7 +195,7 @@ if __name__ == "__main__":
         except asyncio.CancelledError:
             logger.info("Worker cancelled.")
         finally:
-            await db_client.close()
+            await _default_db_client.close()
             logger.info("Worker shutdown complete.")
 
     asyncio.run(run())

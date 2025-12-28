@@ -1,4 +1,5 @@
 from contextlib import asynccontextmanager
+from typing import Any, AsyncGenerator
 
 import uvicorn
 import asyncpg
@@ -23,33 +24,33 @@ from exception_handlers import (
 )
 from settings import settings
 from pgqueuer.db import AsyncpgDriver
-from pgqueuer.qm import QueueManager
+from pgqueuer.queries import Queries
 
+# Initialize DBClient at module level or pass it to Litestar state
+db_client = DBClient(db_url=settings.db_url)
 
 @asynccontextmanager
 async def lifespan(app: Litestar):
-    db_client = DBClient(db_url=settings.db_url)
     app.state.db_client = db_client
-
     # Create connection pool for the broker database
-    broker_url = settings.broker_url.replace("+asyncpg", "")
-    pool = await asyncpg.create_pool(broker_url)
+    pool = await asyncpg.create_pool(settings.broker_url)
     app.state.pg_pool = pool
-
     yield
-
-    # Teardown
     await pool.close()
     await db_client.close()
 
 
-async def provide_worker_client(state: State) -> WorkerClient:
+async def provide_worker_client(state: State) -> AsyncGenerator[WorkerClient, Any]:
     """Provides a WorkerClient instance."""
     pool: asyncpg.Pool = state.pg_pool
     async with pool.acquire() as connection:
         driver = AsyncpgDriver(connection)
-        qm = QueueManager(driver)
-        yield WorkerClient(queue_manager=qm)
+        queries = Queries(driver)
+        yield WorkerClient(queries=queries)
+
+
+async def provide_db_client() -> DBClient:
+    return db_client
 
 
 # Database Configuration
@@ -69,7 +70,9 @@ app = Litestar(
         DefineMiddleware(RequestIDMiddleware),
         DefineMiddleware(UserCheckMiddleware),
     ],
-    dependencies={"worker_client": Provide(provide_worker_client)},
+    dependencies={
+        "worker_client": Provide(provide_worker_client),
+    },
     exception_handlers={
         Exception: internal_server_error_handler,
         NotFoundException: not_found_error_handler,

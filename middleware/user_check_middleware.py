@@ -1,7 +1,7 @@
 from typing import TYPE_CHECKING
 from uuid import UUID
 
-from litestar.types import Scope, Receive, Send
+from litestar.types import Scope, Receive, Send, ASGIApp
 from litestar.exceptions import (
     NotAuthorizedException,
     PermissionDeniedException,
