@@ -1,6 +1,5 @@
 from litestar import Controller, get, post
 from litestar.status_codes import HTTP_201_CREATED
-from litestar.datastructures import State
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from orm import museum as museum_repo

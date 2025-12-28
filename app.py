@@ -1,5 +1,6 @@
 from contextlib import asynccontextmanager
-from typing import Any, AsyncGenerator
+from typing import Any
+from uuid import UUID
 
 import uvicorn
 import asyncpg
@@ -8,8 +9,9 @@ from litestar.di import Provide
 from litestar.middleware import DefineMiddleware
 from litestar.middleware.logging import LoggingMiddlewareConfig
 from advanced_alchemy.extensions.litestar import SQLAlchemyAsyncConfig, SQLAlchemyPlugin
-from litestar.datastructures import State
-from litestar.exceptions import NotFoundException
+from litestar.exceptions import NotFoundException, PermissionDeniedException, NotAuthorizedException
+from sqlalchemy.exc import NoResultFound
+from sqlalchemy.ext.asyncio import AsyncSession
 
 from clients.db_client import DBClient
 from clients.worker_client import WorkerClient
@@ -23,8 +25,8 @@ from exception_handlers import (
     not_found_error_handler,
 )
 from settings import settings
-from pgqueuer.db import AsyncpgDriver
-from pgqueuer.queries import Queries
+from orm.user import get_user
+from orm.models.user import User
 
 # Initialize DBClient at module level or pass it to Litestar state
 db_client = DBClient(db_url=settings.db_url)
@@ -35,22 +37,10 @@ async def lifespan(app: Litestar):
     # Create connection pool for the broker database
     pool = await asyncpg.create_pool(settings.broker_url)
     app.state.pg_pool = pool
+    app.state.worker_client = WorkerClient(pool)
     yield
     await pool.close()
     await db_client.close()
-
-
-async def provide_worker_client(state: State) -> AsyncGenerator[WorkerClient, Any]:
-    """Provides a WorkerClient instance."""
-    pool: asyncpg.Pool = state.pg_pool
-    async with pool.acquire() as connection:
-        driver = AsyncpgDriver(connection)
-        queries = Queries(driver)
-        yield WorkerClient(queries=queries)
-
-
-async def provide_db_client() -> DBClient:
-    return db_client
 
 
 # Database Configuration
@@ -59,6 +49,18 @@ db_config = SQLAlchemyAsyncConfig(
     create_all=False,  # managed by alembic
     before_send_handler="autocommit",
 )
+
+
+
+async def provide_user(db_session: AsyncSession, scope: dict[str, Any]) -> type[User]:
+    user_id = scope.get("user_id")
+    try:
+        return await get_user(db_session, user_id)
+    except NoResultFound:
+        raise NotAuthorizedException(detail="Invalid X-User-ID header")
+
+async def provide_worker_client(scope: dict[str, Any]) -> WorkerClient:
+    return scope["state"]["worker_client"]
 
 # App
 app = Litestar(
@@ -71,6 +73,7 @@ app = Litestar(
         DefineMiddleware(UserCheckMiddleware),
     ],
     dependencies={
+        "user": Provide(provide_user),
         "worker_client": Provide(provide_worker_client),
     },
     exception_handlers={

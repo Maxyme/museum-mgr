@@ -2,9 +2,9 @@ from litestar import Controller, get
 from litestar.status_codes import HTTP_200_OK, HTTP_503_SERVICE_UNAVAILABLE
 from litestar.response import Response
 from litestar.datastructures import State
-import asyncpg
 
 from clients.db_client import DBClient
+from clients.worker_client import WorkerClient
 
 
 class HealthController(Controller):
@@ -17,22 +17,11 @@ class HealthController(Controller):
     @get("/ready")
     async def ready(self, state: State) -> Response[dict[str, str]]:
         db_client: DBClient = state.db_client
-        pool: asyncpg.Pool = state.pg_pool
+        worker_client: WorkerClient = state.worker_client
 
         try:
             is_db_migrated = await db_client.check_migrations()
-
-            # Check worker DB connection and schema existence
-            is_worker_ready = False
-            try:
-                async with pool.acquire() as conn:
-                    # Check connection and if pgqueuer table exists
-                    # This implies schema is installed and queue is ready
-                    # Todo, worker client should have api check for live instead
-                    await conn.execute("SELECT 1 FROM pgqueuer LIMIT 1")
-                is_worker_ready = True
-            except Exception:
-                is_worker_ready = False
+            is_worker_ready = await worker_client.is_ready()
 
             if is_db_migrated and is_worker_ready:
                 return Response({"status": "ready"}, status_code=HTTP_200_OK)

@@ -14,6 +14,7 @@ class UserController(Controller):
     path = "/users"
     guards = [admin_guard]
 
+
     @post("/", status_code=HTTP_201_CREATED)
     async def create_user(self, data: UserCreate, db_session: AsyncSession) -> UserRead:
         user = await user_repo.create_user(db_session, data)
@@ -31,6 +32,10 @@ class UserController(Controller):
             raise NotFoundException(f"User {user_id} not found")
         return UserRead.model_validate(user)
 
+    @get("whoami")
+    async def whoami(self):
+        pass
+
     @patch("/{user_id:uuid}")
     async def update_user(
         self, user_id: UUID, data: UserUpdate, db_session: AsyncSession
@@ -39,3 +44,4 @@ class UserController(Controller):
         if not user:
             raise NotFoundException(f"User {user_id} not found")
         return UserRead.model_validate(user)
+

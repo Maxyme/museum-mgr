@@ -16,8 +16,8 @@ async def create_user(session: AsyncSession, data: UserCreate) -> User:
     return user
 
 
-async def get_user(session: AsyncSession, user_id: UUID) -> User | None:
-    return await session.get(User, user_id)
+async def get_user(session: AsyncSession, user_id: UUID) -> type[User]:
+    return await session.get_one(User, user_id)
 
 
 async def list_users(session: AsyncSession) -> Sequence[User]:
