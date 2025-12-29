@@ -1,6 +1,6 @@
 from sqlalchemy import CheckConstraint
 from sqlalchemy.orm import Mapped, mapped_column
-from api_models.base import Base
+from orm.models.base import Base
 
 
 class User(Base):
@@ -10,7 +10,8 @@ class User(Base):
         nullable=False,
     )
     email: Mapped[str] = mapped_column(
-        CheckConstraint("char_length(email) >= 1", name="check_user_email_non_empty"),
+        CheckConstraint("char_length(email) >= 3", name="check_user_email_min_length"),
+        unique=True,
         nullable=False,
     )
     is_admin: Mapped[bool] = mapped_column(default=False, nullable=False)

@@ -18,6 +18,8 @@ dependencies = [
     "loguru>=0.7.2",
     "pgqueuer>=0.25.3",
     "dependency-injector>=4.41.0",
+    "pydantic>=2.12.5",
+    "email-validator>=2.3.0",
 ]
 
 [tool.uv]

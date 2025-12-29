@@ -1,6 +1,6 @@
 from sqlalchemy import CheckConstraint
 from sqlalchemy.orm import Mapped, mapped_column
-from api_models.base import Base
+from orm.models.base import Base
 
 
 class City(Base):

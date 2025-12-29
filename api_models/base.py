@@ -1,7 +1,7 @@
-from advanced_alchemy.base import UUIDv7AuditBase
+from pydantic import BaseModel, ConfigDict
 
 
-class Base(UUIDv7AuditBase):
-    """Shared base for all models to ensure shared metadata/registry."""
+class APIBase(BaseModel):
+    """Base for all API models."""
 
-    __abstract__ = True
+    model_config = ConfigDict(from_attributes=True)

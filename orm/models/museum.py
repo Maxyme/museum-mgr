@@ -1,11 +1,11 @@
 from uuid import UUID
 from sqlalchemy import ForeignKey, CheckConstraint
 from sqlalchemy.orm import Mapped, mapped_column, relationship
-from api_models.base import Base
+from orm.models.base import UserAuditBase
 from orm.models.city import City
 
 
-class Museum(Base):
+class Museum(UserAuditBase):
     __tablename__ = "museum"
 
     city_id: Mapped[UUID] = mapped_column(ForeignKey("city.id"), nullable=False)

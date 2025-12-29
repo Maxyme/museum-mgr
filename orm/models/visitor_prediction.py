@@ -1,12 +1,13 @@
+from uuid import UUID
 from sqlalchemy import ForeignKey, CheckConstraint
 from sqlalchemy.orm import Mapped, mapped_column, relationship
-from uuid import UUID
-from api_models.base import Base
+from orm.models.base import Base
 from orm.models.city import City
 
 
 class VisitorPrediction(Base):
     __tablename__ = "visitor_prediction"
+
     city_id: Mapped[UUID] = mapped_column(ForeignKey("city.id"), nullable=False)
     predicted_visitors: Mapped[int] = mapped_column(
         CheckConstraint(

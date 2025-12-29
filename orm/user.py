@@ -5,10 +5,10 @@ from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from orm.models.user import User
-from api_models.user import UserCreate, UserUpdate
+from api_models.user import ApiUserIn
 
 
-async def create_user(session: AsyncSession, data: UserCreate) -> User:
+async def create_user(session: AsyncSession, data: ApiUserIn) -> User:
     user = User(name=data.name, email=data.email, is_admin=data.is_admin)
     session.add(user)
     await session.flush()
@@ -26,18 +26,18 @@ async def list_users(session: AsyncSession) -> Sequence[User]:
 
 
 async def update_user(
-    session: AsyncSession, user_id: UUID, data: UserUpdate
+    session: AsyncSession, user_id: UUID, data: ApiUserIn
 ) -> User | None:
     user = await get_user(session, user_id)
     if not user:
         return None
 
-    if data.name is not None:
-        user.name = data.name
-    if data.email is not None:
-        user.email = data.email
-    if data.is_admin is not None:
-        user.is_admin = data.is_admin
+    # if data.name is not None:
+    #     user.name = data.name
+    # if data.email is not None:
+    #     user.email = data.email
+    # if data.is_admin is not None:
+    #     user.is_admin = data.is_admin
 
     # stmt = update(User).where(User.id == user_id).values({"name": data.name, "email": data.email, "is_admin": data.is_admin})
     # await session.query(Stuff).update({Stuff.foo: Stuff.foo + 1})

@@ -35,7 +35,7 @@ async def setup_db(db_client: DBClient):
     broker_url = settings.broker_url.replace("+asyncpg", "")
     conn = await asyncpg.connect(broker_url)
     q = Queries.from_asyncpg_connection(conn)
-    
+
     try:
         await q.install()
     except asyncpg.exceptions.DuplicateObjectError:

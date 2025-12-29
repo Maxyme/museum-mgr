@@ -6,7 +6,9 @@ from litestar.types import Scope, Receive, Send, ASGIApp
 
 
 class UserCheckMiddleware(ASGIMiddleware):
-    async def handle(self, scope: Scope, receive: Receive, send: Send, next_app: ASGIApp) -> None:
+    async def handle(
+        self, scope: Scope, receive: Receive, send: Send, next_app: ASGIApp
+    ) -> None:
         """Add the user_id to the request scope."""
         headers = dict(scope["headers"])
         user_id_bytes = headers.get(b"x-user-id")

@@ -9,7 +9,11 @@ from litestar.di import Provide
 from litestar.middleware import DefineMiddleware
 from litestar.middleware.logging import LoggingMiddlewareConfig
 from advanced_alchemy.extensions.litestar import SQLAlchemyAsyncConfig, SQLAlchemyPlugin
-from litestar.exceptions import NotFoundException, PermissionDeniedException, NotAuthorizedException
+from litestar.exceptions import (
+    NotFoundException,
+    PermissionDeniedException,
+    NotAuthorizedException,
+)
 from sqlalchemy.exc import NoResultFound
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -31,13 +35,21 @@ from orm.models.user import User
 # Initialize DBClient at module level or pass it to Litestar state
 db_client = DBClient(db_url=settings.db_url)
 
+
 @asynccontextmanager
 async def lifespan(app: Litestar):
+    print("DEBUG: lifespan starting")
     app.state.db_client = db_client
     # Create connection pool for the broker database
-    pool = await asyncpg.create_pool(settings.broker_url)
-    app.state.pg_pool = pool
-    app.state.worker_client = WorkerClient(pool)
+    try:
+        pool = await asyncpg.create_pool(settings.broker_url)
+        print("DEBUG: pool created")
+        app.state.pg_pool = pool
+        app.state.worker_client = WorkerClient(pool)
+        print("DEBUG: worker_client set in app.state")
+    except Exception as e:
+        print(f"DEBUG: lifespan error: {e}")
+        raise
     yield
     await pool.close()
     await db_client.close()
@@ -51,7 +63,6 @@ db_config = SQLAlchemyAsyncConfig(
 )
 
 
-
 async def provide_user(db_session: AsyncSession, scope: dict[str, Any]) -> type[User]:
     user_id = scope.get("user_id")
     try:
@@ -59,8 +70,10 @@ async def provide_user(db_session: AsyncSession, scope: dict[str, Any]) -> type[
     except NoResultFound:
         raise NotAuthorizedException(detail="Invalid X-User-ID header")
 
+
 async def provide_worker_client(scope: dict[str, Any]) -> WorkerClient:
-    return scope["state"]["worker_client"]
+    return scope["app"].state.worker_client
+
 
 # App
 app = Litestar(
@@ -69,8 +82,8 @@ app = Litestar(
     lifespan=[lifespan],
     middleware=[
         LoggingMiddlewareConfig().middleware,
-        DefineMiddleware(RequestIDMiddleware),
-        DefineMiddleware(UserCheckMiddleware),
+        RequestIDMiddleware(),
+        UserCheckMiddleware(),
     ],
     dependencies={
         "user": Provide(provide_user),

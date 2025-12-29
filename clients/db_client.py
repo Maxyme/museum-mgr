@@ -7,7 +7,7 @@ from sqlalchemy.ext.asyncio import AsyncEngine, create_async_engine, async_sessi
 from sqlalchemy import text, select
 from sqlalchemy import create_engine
 
-from api_models.base import Base
+from orm.models.base import Base
 from orm.models.user import User
 
 logger = logging.getLogger(__name__)

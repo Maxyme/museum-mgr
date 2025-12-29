@@ -1,24 +1,20 @@
 from uuid import UUID
-from typing import Any
-
-from pydantic import BaseModel, field_validator
-
-
-# Pydantic Models
-class MuseumCreate(BaseModel):
-    city: str
-    population: int
+from pydantic import Field
+from api_models.base import APIBase
 
 
-class MuseumRead(BaseModel):
-    model_config = {"from_attributes": True}
-    id: UUID
-    city: str
-    population: int
+class MuseumCreate(APIBase):
+    city_id: UUID = Field(
+        description="The unique identifier of the city where the museum is located"
+    )
+    population: int = Field(
+        description="The annual number of visitors to the museum", gte=0
+    )
 
-    @field_validator("city", mode="before")
-    @classmethod
-    def extract_city_name(cls, v: Any) -> str:
-        if hasattr(v, "name"):
-            return v.name
-        return str(v)
+
+class MuseumRead(APIBase):
+    id: UUID = Field(description="The unique identifier of the museum")
+    city_id: UUID = Field(
+        description="The unique identifier of the city where the museum is located"
+    )
+    population: int = Field(description="The annual number of visitors to the museum")
