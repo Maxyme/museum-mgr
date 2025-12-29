@@ -38,18 +38,11 @@ db_client = DBClient(db_url=settings.db_url)
 
 @asynccontextmanager
 async def lifespan(app: Litestar):
-    print("DEBUG: lifespan starting")
     app.state.db_client = db_client
     # Create connection pool for the broker database
-    try:
-        pool = await asyncpg.create_pool(settings.broker_url)
-        print("DEBUG: pool created")
-        app.state.pg_pool = pool
-        app.state.worker_client = WorkerClient(pool)
-        print("DEBUG: worker_client set in app.state")
-    except Exception as e:
-        print(f"DEBUG: lifespan error: {e}")
-        raise
+    pool = await asyncpg.create_pool(settings.broker_url)
+    app.state.pg_pool = pool
+    app.state.worker_client = WorkerClient(pool)
     yield
     await pool.close()
     await db_client.close()
@@ -63,12 +56,12 @@ db_config = SQLAlchemyAsyncConfig(
 )
 
 
-async def provide_user(db_session: AsyncSession, scope: dict[str, Any]) -> type[User]:
+async def provide_user(db_session: AsyncSession, scope: dict[str, Any]) -> User:
     user_id = scope.get("user_id")
-    try:
-        return await get_user(db_session, user_id)
-    except NoResultFound:
+    user = await get_user(db_session, user_id)
+    if not user:
         raise NotAuthorizedException(detail="Invalid X-User-ID header")
+    return user
 
 
 async def provide_worker_client(scope: dict[str, Any]) -> WorkerClient:

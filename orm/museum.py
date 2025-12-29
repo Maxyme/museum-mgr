@@ -10,11 +10,13 @@ from orm.models.museum import Museum
 from orm.city import get_or_create_city
 
 
-async def create_museum(session: AsyncSession, data: MuseumCreate) -> Museum:
+async def create_museum(
+    session: AsyncSession, data: MuseumCreate, user_id: UUID
+) -> Museum:
     # Check/Create City
     city = await get_or_create_city(session, data.city, data.population)
 
-    museum = Museum(city_id=city.id, population=data.population)
+    museum = Museum(city_id=city.id, population=data.population, user_id=user_id)
     session.add(museum)
     await session.flush()
     await session.refresh(museum)

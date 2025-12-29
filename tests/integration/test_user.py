@@ -4,13 +4,16 @@ from tests.factories import UserCreateFactory
 
 
 @pytest.mark.asyncio
-async def test_get_user(db_session):
+async def test_user_crud(db_session):
     data = UserCreateFactory.build()
+    # create a new user
     created_user = await user_repo.create_user(db_session, data)
     await db_session.commit()
 
     fetched_user = await user_repo.get_user(db_session, created_user.id)
+    assert fetched_user == created_user
 
-    assert fetched_user is not None
-    assert fetched_user.id == created_user.id
-    assert fetched_user.email == data.email
+    # Check get all users
+    users = await user_repo.list_users(db_session)
+    assert len(users) == 1
+

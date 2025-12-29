@@ -7,14 +7,21 @@ from api_models.museum import MuseumCreate, MuseumRead
 from clients.worker_client import WorkerClient
 
 
+from orm.models.user import User
+
+
 class MuseumController(Controller):
     path = "/museums"
 
     @post("/", status_code=HTTP_201_CREATED)
     async def create_museum(
-        self, data: MuseumCreate, db_session: AsyncSession, worker_client: WorkerClient
+        self,
+        data: MuseumCreate,
+        db_session: AsyncSession,
+        worker_client: WorkerClient,
+        user: User,
     ) -> MuseumRead:
-        museum = await museum_repo.create_museum(db_session, data)
+        museum = await museum_repo.create_museum(db_session, data, user.id)
 
         # Send task to worker
         # museum.city is a City object, we need to pass the name string

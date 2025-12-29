@@ -1,13 +1,13 @@
 from uuid import UUID
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 
 
 class MuseumCreate(BaseModel):
-    city: str
+    city: str = Field(min_length=1)
     population: int
 
 
 class MuseumRead(BaseModel):
     id: UUID
-    city: str
+    city: str = Field(min_length=1)
     population: int
