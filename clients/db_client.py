@@ -61,30 +61,21 @@ class DBClient:
 
     @ensure_db_ready
     async def clear_db(self) -> None:
-        try:
-            async with self.engine.begin() as conn:
-                await conn.execute(text("DROP SCHEMA public CASCADE;"))
-                await conn.execute(text("CREATE SCHEMA public;"))
-            logger.info("Database schema dropped and recreated.")
-        except Exception as e:
-            logger.error(f"Failed to clear database: {e}")
-            raise
+        async with self.engine.begin() as conn:
+            await conn.execute(text("DROP SCHEMA public CASCADE;"))
+            await conn.execute(text("CREATE SCHEMA public;"))
+        logger.info("Database schema dropped and recreated.")
 
     @ensure_db_ready
     async def create_all(self) -> None:
-        # Use Base.metadata which now includes both Museum and User
+        """Create all tables. Used for testing."""
         metadata = Base.metadata
-
-        try:
-            async with self.engine.begin() as conn:
-                await conn.run_sync(metadata.create_all)
+        async with self.engine.begin() as conn:
+            await conn.run_sync(metadata.create_all)
             logger.info("Tables created.")
-        except Exception as e:
-            logger.error(f"Failed to create tables: {e}")
-            raise
 
     # check_migrations uses a sync engine internally and manages its own connection,
-    # so we might not strictily need the async wait here, but it's good practice to ensure DB is up.
+    # so we might not strictly need the async wait here, but it's good practice to ensure DB is up.
     # However, since check_migrations creates a separate sync engine, waiting on the async engine
     # ensures the server is reachable.
     @ensure_db_ready
