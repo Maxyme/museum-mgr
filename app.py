@@ -3,19 +3,14 @@ from typing import Any
 from uuid import UUID
 
 import uvicorn
-import asyncpg
 from litestar import Litestar
 from litestar.di import Provide
 from litestar.middleware import DefineMiddleware
 from litestar.middleware.logging import LoggingMiddlewareConfig
 from advanced_alchemy.extensions.litestar import SQLAlchemyAsyncConfig, SQLAlchemyPlugin
-from litestar.exceptions import (
-    NotFoundException,
-    PermissionDeniedException,
-    NotAuthorizedException,
-)
-from sqlalchemy.exc import NoResultFound
+from litestar.exceptions import NotFoundException, PermissionDeniedException, NotAuthorizedException
 from sqlalchemy.ext.asyncio import AsyncSession
+from taskiq_pg.psqlpy import PSQLPyBroker
 
 from clients.db_client import DBClient
 from clients.worker_client import WorkerClient
@@ -34,17 +29,16 @@ from orm.models.user import User
 
 # Initialize DBClient at module level or pass it to Litestar state
 db_client = DBClient(db_url=settings.db_url)
-
+broker = PSQLPyBroker(url=settings.broker_url)
+worker_client = WorkerClient(broker)
 
 @asynccontextmanager
 async def lifespan(app: Litestar):
     app.state.db_client = db_client
-    # Create connection pool for the broker database
-    pool = await asyncpg.create_pool(settings.broker_url)
-    app.state.pg_pool = pool
-    app.state.worker_client = WorkerClient(pool)
+    await worker_client.startup()
+    app.state.worker_client = worker_client
     yield
-    await pool.close()
+    await worker_client.shutdown()
     await db_client.close()
 
 
@@ -55,18 +49,20 @@ db_config = SQLAlchemyAsyncConfig(
     before_send_handler="autocommit",
 )
 
-
-async def provide_user(db_session: AsyncSession, scope: dict[str, Any]) -> User:
+async def provide_user_id(scope: dict[str, Any]) -> UUID:
     user_id = scope.get("user_id")
+    if not user_id:
+        raise NotAuthorizedException(detail="Missing or invalid X-User-ID header")
+    return user_id
+
+async def provide_user(db_session: AsyncSession, user_id: UUID) -> User:
     user = await get_user(db_session, user_id)
     if not user:
-        raise NotAuthorizedException(detail="Invalid X-User-ID header")
+        raise PermissionDeniedException(detail="User not found")
     return user
 
-
 async def provide_worker_client(scope: dict[str, Any]) -> WorkerClient:
-    return scope["app"].state.worker_client
-
+    return scope["state"]["worker_client"]
 
 # App
 app = Litestar(
@@ -75,10 +71,11 @@ app = Litestar(
     lifespan=[lifespan],
     middleware=[
         LoggingMiddlewareConfig().middleware,
-        RequestIDMiddleware(),
-        UserCheckMiddleware(),
+        DefineMiddleware(RequestIDMiddleware),
+        DefineMiddleware(UserCheckMiddleware),
     ],
     dependencies={
+        "user_id": Provide(provide_user_id),
         "user": Provide(provide_user),
         "worker_client": Provide(provide_worker_client),
     },

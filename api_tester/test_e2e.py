@@ -7,12 +7,9 @@ class MuseumCreateFactory(ModelFactory[MuseumCreate]):
 
 
 def test_create_and_list_museums(http_client):
-    # Generate random museum data
+    # Generate a new museum
     museum_data = MuseumCreateFactory.build()
     payload = museum_data.model_dump()
-    print(f"Testing with museum: {payload}")
-
-    # Create
     response = http_client.post("/museums", json=payload)
     assert response.status_code == 201
     created = response.json()
@@ -20,12 +17,10 @@ def test_create_and_list_museums(http_client):
     assert created["population"] == payload["population"]
     assert "id" in created
 
-    # List
+    # Check that it appears in the list
     response = http_client.get("/museums")
     assert response.status_code == 200
     museums = response.json()
-    assert isinstance(museums, list)
-
-    # Verify our created museum is in the list
+    assert len(museums) == 1
     found = any(m["id"] == created["id"] for m in museums)
     assert found, f"Created museum {created['id']} not found in list"

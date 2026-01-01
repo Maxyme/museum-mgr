@@ -16,7 +16,7 @@ class Settings(BaseSettings):
     API_HOST: str = "0.0.0.0"
     API_PORT: int = 8000
     db_type: str = Field(default="postgresql", description="Database type")
-    driver: str = Field(default="asyncpg", description="Database drive")
+    driver: str = Field(default="psqlpy", description="Database driver")
 
     @computed_field
     @property

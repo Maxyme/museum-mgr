@@ -3,7 +3,7 @@ import pytest
 import asyncpg
 from litestar.status_codes import HTTP_201_CREATED
 from settings import settings
-from worker_app import main as worker_main
+from worker import main as worker_main
 from clients.db_client import DBClient
 
 
